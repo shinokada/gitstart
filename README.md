@@ -11,10 +11,10 @@ This script automates creating a git repo. The script will:
 
 ## Requirement
 
-- You must install [GitHub CLI](https://cli.github.com/manual/).
+- Install [GitHub CLI](https://cli.github.com/manual/).
 - Install [yq](https://github.com/mikefarah/yq)
-- When you login GitHub, choose SSH as the default git protocol.
 - Login github using `gh auth login`.
+- Choose SSH as the default git protocol when you login.
 
 ## How to use it
 
@@ -25,7 +25,9 @@ Make the file executable.
 $ chmod 755 gitstart
 ```
 
-Create a directory and then run `gitstart`.
+Create a directory and then run `gitstart`. Follow the instruction. It will ask "Visibility" and "This will create 'your_repo' in your current directory. Continue?".
+
+See the example below:
 
 ```bash
 $ mkdir my_new_repo
