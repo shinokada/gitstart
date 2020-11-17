@@ -1,17 +1,25 @@
 # gitstart
 
-This script automate creating a git repo.
+This script automates creating a git repo. The script will:
+
+- Read your GitHub username from ~/.config/gh/hosts.yml.
+- Uses the directory name as a GitHub repo name.
+- Create a README.md file with the repo name.
+- Add README.md and commit with a message.
+- Create a new repo at GitHub.com
+- Add the remote and push the file.
 
 ## Requirement
 
-- You must install GitHub CLI https://cli.github.com/manual/.
-- [yq](https://github.com/mikefarah/yq)
-- Choose SSH as the default git protocol.
+- You must install [GitHub CLI](https://cli.github.com/manual/).
+- Install [yq](https://github.com/mikefarah/yq)
+- When you login GitHub, choose SSH as the default git protocol.
 - Login github using `gh auth login`.
 
 ## How to use it
 
-This file shoule be executable.
+Download the gitstart file or cron this repo.
+Make the file executable.
 
 ```bash
 $ chmod 755 gitstart
