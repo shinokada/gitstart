@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# This script automate git repo
+# You must install GitHub CLI https://cli.github.com/manual/.
+# Choose SSH as the default git protocol.
+
+user=$(cat ~/.config/gh/hosts.yml | yq r - '"github.com".user')
+dir="$PWD"
+repo=$(basename $dir) # bin
+
+echo "# $repo" >>README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+
+# check if you are logged in
+if [[ $(gh auth status) -eq 1 ]]; then
+    # not logged-in
+    echo "You must logged in. Use 'gh auth login'"
+    exit 1
+else
+    # You are logged in.
+    gh repo create $repo
+    git remote add origin git@github.com:$user/$repo.git
+    git push -u origin main
+    echo "You have created a github repo at https://github.com/$user/$repo"
+fi
