@@ -1,13 +1,15 @@
 # gitstart
 
+> Gitstart creates, adds, and pushes with one line.
+
 This script automates creating a git repo. The script will:
 
-- Read your GitHub username from ~/.config/gh/hosts.yml.
-- Uses the directory name as a GitHub repo name.
+- Create a new repo at GitHub.com
 - Create a README.md file with the repo name.
 - Add README.md and commit with a message.
-- Create a new repo at GitHub.com
 - Add the remote and push the file.
+
+The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the directory name as a GitHub repo name.
 
 ## Requirement
 
