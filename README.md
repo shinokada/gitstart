@@ -1,4 +1,4 @@
-# gitstart
+# Gitstart
 
 > Gitstart creates, adds, and pushes with one line.
 
