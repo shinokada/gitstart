@@ -10,20 +10,22 @@ dir="$PWD"
 repo=$(basename "$dir")
 echo ">>> Your github username is ${user}."
 
-# github gitignore url
-url=https://raw.githubusercontent.com/github/gitignore/master/"${1^}".gitignore
-# get the status http code, 200, 404 etc.
-http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "$url")
+if [[ $1 ]]; then
+    # github gitignore url
+    url=https://raw.githubusercontent.com/github/gitignore/master/"${1^}".gitignore
+    # get the status http code, 200, 404 etc.
+    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "$url")
 
-if [[ $http_status -eq 200 ]]; then
-    # get argument e.g python, go etc, capitalize it
-    echo ">>> Creating .gitignore for ${1^}..."
-    # create .gitignore
-    curl "$url" -o .gitignore
-    echo ">>> .gitignore created."
-else
-    echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-    exit 1
+    if [[ $http_status -eq 200 ]]; then
+        # get argument e.g python, go etc, capitalize it
+        echo ">>> Creating .gitignore for ${1^}..."
+        # create .gitignore
+        curl "$url" -o .gitignore
+        echo ">>> .gitignore created."
+    else
+        echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
+        exit 1
+    fi
 fi
 
 echo ">>> Creating READMR.md."
@@ -51,4 +53,3 @@ else
     git push -u origin main
     echo ">>> You have created a github repo at https://github.com/$user/$repo"
 fi
-
