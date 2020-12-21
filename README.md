@@ -2,6 +2,8 @@
 
 [Please read more details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
 
+[Find the update at Github.](https://github.com/shinokada/gitstart)
+
 > Gitstart creates, adds, and pushes with one line.
 
 This script automates creating a git repo. The script will:
