@@ -1,5 +1,7 @@
 # Gitstart
 
+[Please read more details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
+
 > Gitstart creates, adds, and pushes with one line.
 
 This script automates creating a git repo. The script will:
@@ -28,11 +30,26 @@ Make the file executable.
 $ chmod 755 gitstart
 ```
 
-Create a directory and then run `gitstart`. Follow the instruction. It will ask "Visibility" and "This will create 'your_repo' in your current directory. Continue?".
+Create a `~/bin` directory and add the path to your terminal config file, `~/.zshrc` or `~/.bashrc`.
+
+```.zshrc
+export PATH="~/bin:$PATH"
+```
+
+Create a project directory and then run `gitstart`. Follow the instruction. It will ask "Visibility" and "This will create 'your_repo' in your current directory. Continue?".
+
+You can add your programming language to add `.gitignore` file.
+
+```terminal
+# For Python
+$ gitstart python
+# For Go
+$ gitstart go
+```
 
 See the example below:
 
-```bash
+```terminal
 $ mkdir my_new_repo
 $ cd my_new_repo
 $ gitstart python
