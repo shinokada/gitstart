@@ -5,7 +5,7 @@
 # Install yq https://github.com/mikefarah/yq
 # Choose SSH as the default git protocol.
 
-user=$(cat <"$HOME"/.config/gh/hosts.yml | yq r - '"github.com".user')
+user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
 dir="$PWD"
 repo=$(basename "$dir")
 echo ">>> Your github username is ${user}."
