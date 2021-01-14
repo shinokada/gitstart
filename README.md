@@ -28,6 +28,7 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 $ brew install yq@3
 $ echo 'export PATH="/usr/local/opt/yq@3/bin:$PATH"' >> ~/.zshrc
 ```
+
 - Login github using `gh auth login`.
 - Choose SSH as the default git protocol when you login.
 

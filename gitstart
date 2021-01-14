@@ -29,7 +29,14 @@ if [[ $1 ]]; then
 fi
 
 echo ">>> Creating READMR.md."
-echo "# $repo" >>README.md
+printf "# %s \n 
+## Overview \n\n 
+## Requirement \n\n
+## Usage \n\n 
+## Features \n\n 
+## Reference \n\n 
+## Author \n\n 
+## Licence" "$repo" >> README.md
 echo ">>> Running git init."
 git init
 echo ">>> Adding README.md and .gitignore."
