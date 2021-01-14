@@ -107,7 +107,10 @@ $ gitstart
 
 ## Author
 
-[twitter](https://twitter.com/shinokada)
+Shinichi Okada
+
+- [Medium](https://shinichiokada.medium.com/)
+- [Twitter](https://twitter.com/shinokada)
 
 ## License
 
