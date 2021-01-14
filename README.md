@@ -21,7 +21,12 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 ## Requirement
 
 - Install [GitHub CLI](https://cli.github.com/manual/).
-- Install [yq](https://github.com/mikefarah/yq)
+- Install [yq@3](https://github.com/mikefarah/yq)
+
+```bash
+# intall yq@3
+$ brew install yq@3
+```
 - Login github using `gh auth login`.
 - Choose SSH as the default git protocol when you login.
 
