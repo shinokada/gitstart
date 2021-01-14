@@ -5,10 +5,48 @@
 # Install yq https://github.com/mikefarah/yq
 # Choose SSH as the default git protocol.
 
+# Usage
+# mkdir my_new_repo
+# cd my_new_repo
+# gitstart python
+
+
+unset user dir repo license_url
+
 user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
 dir="$PWD"
 repo=$(basename "$dir")
+license_url="mit"
 echo ">>> Your github username is ${user}."
+
+PS3='Your lisence: '
+lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "Quit")
+
+echo "Select a license: "
+select license in "${lisences[@]}"; do
+    case $license in
+        "MIT: I want it simple and permissive.")
+        echo "MIT"
+        break
+        ;;
+        "Apache License 2.0: I need to work in a community.")
+        echo "Apache"
+        license_url="apache-2.0"
+        break
+        ;;
+        "GNU GPLv3: I care about sharing improvements.")
+        echo "GNU"
+        license_url="lgpl-3.0"
+        break
+        ;;
+        "Quit")
+        echo "User requested exit."
+        exit;;
+        *) echo "Invalid option $REPLY"
+    esac
+done
+
+curl -s "https://api.github.com/licenses/$license_url" | jq -r '.body' > "$dir"/license.txt
 
 if [[ $1 ]]; then
     # github gitignore url
@@ -36,7 +74,9 @@ printf "# %s \n
 ## Features \n\n 
 ## Reference \n\n 
 ## Author \n\n 
-## Licence" "$repo" >> README.md
+## Licence
+
+Please see license.txt. \n" "$repo" > README.md
 echo ">>> Running git init."
 git init
 echo ">>> Adding README.md and .gitignore."
@@ -60,3 +100,4 @@ else
     git push -u origin main
     echo ">>> You have created a github repo at https://github.com/$user/$repo"
 fi
+

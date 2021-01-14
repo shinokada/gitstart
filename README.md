@@ -11,6 +11,7 @@
 This script automates creating a git repo. The script will:
 
 - Create .gitignore if you provide a language.
+- Create a license.txt depends on your choice.
 - Create a new repo at GitHub.com.
 - Create a README.md file with the repo name.
 - Add README.md and commit with a message.
@@ -24,9 +25,8 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 - Install [yq@3](https://github.com/mikefarah/yq)
 
 ```bash
-# intall yq@3
-$ brew install yq@3
-$ echo 'export PATH="/usr/local/opt/yq@3/bin:$PATH"' >> ~/.zshrc
+# intall yq
+$ brew install yq
 ```
 
 - Login github using `gh auth login`.
@@ -64,22 +64,32 @@ See the example below:
 ```bash
 $ mkdir my_new_repo
 $ cd my_new_repo
-$ gitstart python
+$ mkdir my_new_repo
+$ cd my_new_repo
+❯ gitstart python
 >>> Your github username is shinokada.
+Select a license:
+1) MIT: I want it simple and permissive.
+2) Apache License 2.0: I need to work in a community.
+3) GNU GPLv3: I care about sharing improvements.
+4) Quit
+Your lisence: 2
+Apache
 >>> Creating .gitignore for Python...
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-100  2035  100  2035    0     0  29926      0 --:--:-- --:--:-- --:--:-- 29926
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:100  2035  100  2035    0     0  26776      0 --:--:-- --:--:-- --:--:-- 27133
 >>> .gitignore created.
 >>> Creating READMR.md.
 >>> Running git init.
-Initialized empty Git repository in /Users/shinokada/testdir/my_new_repo/.git/
+Initialized empty Git repository in /Users/shinokada/Downloads/my_new_repo/.git/
 >>> Adding README.md and .gitignore.
 >>> Commiting with a message 'first commit'.
-[master (root-commit) 685f369] first commit
- 2 files changed, 139 insertions(+)
+[master (root-commit) beafcfa] first commit
+ 12 files changed, 363 insertions(+)
  create mode 100644 .gitignore
  create mode 100644 README.md
+ create mode 100644 license.txt
 >>> Creating the main branch.
 github.com
   ✓ Logged in to github.com as shinokada (~/.config/gh/hosts.yml)
@@ -93,12 +103,12 @@ github.com
 ✓ Added remote git@github.com:shinokada/my_new_repo.git
 fatal: remote origin already exists.
 >>> Pushing local repo to the remote.
-Enumerating objects: 4, done.
-Counting objects: 100% (4/4), done.
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
 Delta compression using up to 4 threads
-Compressing objects: 100% (3/3), done.
-Writing objects: 100% (4/4), 1.33 KiB | 1.33 MiB/s, done.
-Total 4 (delta 0), reused 0 (delta 0)
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (7/7), 5.44 KiB | 2.72 MiB/s, done.
+Total 7 (delta 0), reused 0 (delta 0)
 To github.com:shinokada/my_new_repo.git
  * [new branch]      main -> main
 Branch 'main' set up to track remote branch 'main' from 'origin'.
