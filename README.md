@@ -4,6 +4,8 @@
 
 [Find the update at Github.](https://github.com/shinokada/gitstart)
 
+## Overview
+
 > Gitstart creates, adds, and pushes with one line.
 
 This script automates creating a git repo. The script will:
@@ -23,12 +25,13 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 - Login github using `gh auth login`.
 - Choose SSH as the default git protocol when you login.
 
-## How to use it
+## Usage
 
 Download the gitstart file or cron this repo.
 Make the file executable.
 
 ```bash
+# change permission
 $ chmod 755 gitstart
 ```
 
@@ -42,7 +45,7 @@ Create a project directory and then run `gitstart`. Follow the instruction. It w
 
 You can add your programming language to add `.gitignore` file.
 
-```terminal
+```bash
 # For Python
 $ gitstart python
 # For Go
@@ -51,7 +54,7 @@ $ gitstart go
 
 See the example below:
 
-```terminal
+```bash
 $ mkdir my_new_repo
 $ cd my_new_repo
 $ gitstart python
@@ -97,6 +100,16 @@ Branch 'main' set up to track remote branch 'main' from 'origin'.
 
 If you prefer not to add `.gitignore`.
 
-```terminal
+```bash
+# start it
 $ gitstart
 ```
+
+## Author
+
+[twitter](https://twitter.com/shinokada)
+
+## License
+
+Copyright (c) 2021 Shinichi Okada (@shinokada)
+This software is released under the MIT License, see LICENSE.
