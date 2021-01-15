@@ -122,6 +122,10 @@ If you prefer not to add `.gitignore`.
 $ gitstart
 ```
 
+## About Licensing
+
+Read more about [Licensing](https://docs.github.com/en/free-pro-team@latest/rest/reference/licenses).
+
 ## Author
 
 Shinichi Okada
