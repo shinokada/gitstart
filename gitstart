@@ -78,6 +78,15 @@ done
 
 ############# Main body ############
 
+# don't allow to create a git repo in the ~
+# user may use . in the HOME
+cwd=$(pwd)
+if [[ (${dir} = $HOME) || ($cwd = $HOME && ${dir} = ".") ]]; then
+    echo "This script doesn't allow to create a git repo in the home directory."
+    echo "Use another directory."
+    exit 1
+fi
+
 # if dir is empty exit
 if [[ -z ${dir} ]]; then
     echo "You must set -d dir_name."
@@ -102,6 +111,7 @@ user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
 repo=$(basename "${dir}")
 license_url="mit"
 echo ">>> Your github username is ${user}."
+echo ">>> Your new repo name is ${repo}."
 
 PS3='Your lisence: '
 lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
@@ -159,7 +169,7 @@ if [[ ${prog_lang} ]]; then
 fi
 echo "${dir}"
 echo ">>> Creating ${dir}."
-mkdir "${dir}" || exit
+mkdir -p "${dir}" || exit
 cd "${dir}" || exit
 echo ">>> Creating READMR.md."
 printf "# %s \n
