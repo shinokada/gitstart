@@ -2,14 +2,14 @@
 
 ########################
 # Author: Shinichi Okada
-# Version : v0.0.5
-# Date: 2021-04-17
+# Date: 2021-05-22
 ###########################
 
 unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
+version="0.1.0"
 
 usage() {
     cat <<EOF
@@ -64,6 +64,10 @@ while (($# > 0)); do # while arguments count>0
         ;;
     -h | --help)
         usage
+        ;;
+    -v | --version)
+        echo ${version}
+        exit
         ;;
     *) # unknown flag/switch
         POSITIONAL+=("$1")
