@@ -1,82 +1,173 @@
 #!/usr/bin/env bash
 
-# This script automate git repo
-# You must install GitHub CLI https://cli.github.com/manual/.
-# Install yq https://github.com/mikefarah/yq
-# Choose SSH as the default git protocol.
-
-# Usage
-# mkdir my_new_repo
-# cd my_new_repo
-# gitstart python
-
+########################
+# Author: Shinichi Okada
+# Version : v0.0.5
+# Date: 2021-04-17
+###########################
 
 unset user dir repo license_url
 
+script_name=$(basename "$0")
+dir=""
+
+usage() {
+    cat <<EOF
+
+Script name:
+=====
+
+$script_name
+
+Description:
+============
+
+This script automate creating git repo.
+This will create a dir, add a license, README file, run git init and push to Github.
+Choose SSH as the default git protocol.
+
+List of .gitignore supported by Github
+======================================
+
+- https://github.com/github/gitignore
+
+Dependencies:
+=============
+
+- GitHub CLI https://cli.github.com/manual/
+- yq https://github.com/mikefarah/yq
+
+Usage:
+======
+
+$script_name [ -l | --lang programming_language ] [ -d | --dir directory ]
+
+Examples:
+=========
+
+    $script_name -l python -d newrepo
+    $script_name -d newrepo
+    $script_name -h
+EOF
+    exit 2
+}
+
+while (($# > 0)); do # while arguments count>0
+    case "$1" in
+    -l | --lang)
+        prog_lang=$2
+        shift
+        ;;
+    -d | --dir)
+        dir=$2
+        shift
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *) # unknown flag/switch
+        POSITIONAL+=("$1")
+        shift
+        ;;
+    esac
+done
+
+############# Main body ############
+
+# if dir is empty exit
+if [[ -z ${dir} ]]; then
+    echo "You must set -d dir_name."
+    exit
+fi
+
+# check if you have Github CLI
+if [ ! "$(command -v gh)" ]; then
+    echo "Please install Github CLI from https://cli.github.com/manual/."
+    exit 2
+fi
+
+# check if you have yq
+if [ ! "$(command -v yq)" ]; then
+    echo "Please install yq from https://github.com/mikefarah/yq."
+    echo "Or run brew install yq"
+    exit 2
+fi
+
 user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
-dir="$PWD"
-repo=$(basename "$dir")
+
+repo=$(basename "${dir}")
 license_url="mit"
 echo ">>> Your github username is ${user}."
 
 PS3='Your lisence: '
-lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "Quit")
+lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
 
 echo "Select a license: "
 select license in "${lisences[@]}"; do
-    case $license in
-        "MIT: I want it simple and permissive.")
+    case ${license} in
+    "MIT: I want it simple and permissive.")
         echo "MIT"
         break
         ;;
-        "Apache License 2.0: I need to work in a community.")
+    "Apache License 2.0: I need to work in a community.")
         echo "Apache"
         license_url="apache-2.0"
         break
         ;;
-        "GNU GPLv3: I care about sharing improvements.")
+    "GNU GPLv3: I care about sharing improvements.")
         echo "GNU"
         license_url="lgpl-3.0"
         break
         ;;
-        "Quit")
+    "None")
+        echo "License None"
+        license_url=false
+        break
+        ;;
+    "Quit")
         echo "User requested exit."
-        exit;;
-        *) echo "Invalid option $REPLY"
+        exit
+        ;;
+    *) echo "Invalid option $REPLY" ;;
     esac
 done
 
-curl -s "https://api.github.com/licenses/$license_url" | jq -r '.body' > "$dir"/license.txt
+if [[ ${license_url} != false ]]; then
+    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt
+fi
 
-if [[ $1 ]]; then
+if [[ ${prog_lang} ]]; then
     # github gitignore url
-    url=https://raw.githubusercontent.com/github/gitignore/master/"${1^}".gitignore
+    url=https://raw.githubusercontent.com/github/gitignore/master/"${prog_lang^}".gitignore
     # get the status http code, 200, 404 etc.
-    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "$url")
+    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "${url}")
 
     if [[ $http_status -eq 200 ]]; then
         # get argument e.g python, go etc, capitalize it
         echo ">>> Creating .gitignore for ${1^}..."
         # create .gitignore
-        curl "$url" -o .gitignore
+        curl "${url}" -o .gitignore
         echo ">>> .gitignore created."
     else
         echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-        exit 1
+        echo ">>> We proceed without .gitignore."
     fi
 fi
-
+echo "${dir}"
+echo ">>> Creating ${dir}."
+mkdir "${dir}" || exit
+cd "${dir}" || exit
 echo ">>> Creating READMR.md."
-printf "# %s \n 
-## Overview \n\n 
-## Requirement \n\n
-## Usage \n\n 
-## Features \n\n 
-## Reference \n\n 
-## Author \n\n 
+printf "# %s \n
+## Overview\n\n
+## Requirement\n\n
+## Usage\n\n
+## Features\n\n
+## Reference\n\n
+## Author\n\n
 ## Licence
 
-Please see license.txt. \n" "$repo" > README.md
+Please see license.txt.\n" "${repo}" >README.md
 echo ">>> Running git init."
 git init
 echo ">>> Adding README.md and .gitignore."
@@ -86,7 +177,6 @@ git commit -m "first commit"
 echo ">>> Creating the main branch."
 git branch -M main
 
-
 # check if you are logged in
 if [[ $(gh auth status) -eq 1 ]]; then
     # not logged-in
@@ -94,10 +184,9 @@ if [[ $(gh auth status) -eq 1 ]]; then
     exit 1
 else
     echo ">>> You are logged in. Creating your ${repo} in remote."
-    gh repo create "$repo"
-    git remote add origin git@github.com:"$user"/"$repo".git
+    gh repo create "${repo}"
+    git remote add origin git@github.com:"${user}"/"${repo}".git
     echo ">>> Pushing local repo to the remote."
     git push -u origin main
-    echo ">>> You have created a github repo at https://github.com/$user/$repo"
+    echo ">>> You have created a github repo at https://github.com/${user}/${repo}"
 fi
-
