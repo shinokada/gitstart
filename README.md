@@ -19,20 +19,21 @@ This script automates creating a git repo. The script will:
 
 The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the directory name as a GitHub repo name.
 
-## Requirement
+## Requirements
 
-- Install [GitHub CLI](https://cli.github.com/manual/).
-- Install [yq@3](https://github.com/mikefarah/yq)
+- [jq](https://stedolan.github.io/jq/)
+- [GitHub CLI](https://cli.github.com/manual/).
+- [yq@3](https://github.com/mikefarah/yq)
 
-```bash
-# intall yq
-$ brew install yq
+## Installation
+
+- Using homebrew:
+
+```sh
+brew tap shinokada/gitstart && brew install gitstart
 ```
 
-- Login github using `gh auth login`.
-- Choose SSH as the default git protocol when you login.
-
-## Usage
+- Manually
 
 Download the gitstart file or cron this repo.
 Make the file executable.
@@ -48,78 +49,57 @@ Create a `~/bin` directory and add the path to your terminal config file, `~/.zs
 export PATH="~/bin:$PATH"
 ```
 
-Create a project directory and then run `gitstart`. Follow the instruction. It will ask "Visibility" and "This will create 'your_repo' in your current directory. Continue?".
+## Usage
 
-You can add your programming language to add `.gitignore` file.
+- Login github using `gh auth login`.
+- Choose SSH as the default git protocol when you login.
 
-```bash
-# For Python
-$ gitstart python
-# For Go
-$ gitstart go
+```sh
+# define a dir path
+gitstart -d ./path
+# in a current dir
+cd new_repo
+gitstart -d .
 ```
 
-See the example below:
-
-```bash
-$ mkdir my_new_repo
-$ cd my_new_repo
-$ mkdir my_new_repo
-$ cd my_new_repo
-❯ gitstart python
->>> Your github username is shinokada.
+- Select a license.
+  
+```sh
 Select a license:
 1) MIT: I want it simple and permissive.
 2) Apache License 2.0: I need to work in a community.
 3) GNU GPLv3: I care about sharing improvements.
-4) Quit
-Your lisence: 2
-Apache
->>> Creating .gitignore for Python...
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:100  2035  100  2035    0     0  26776      0 --:--:-- --:--:-- --:--:-- 27133
->>> .gitignore created.
->>> Creating READMR.md.
->>> Running git init.
-Initialized empty Git repository in /Users/shinokada/Downloads/my_new_repo/.git/
->>> Adding README.md and .gitignore.
->>> Commiting with a message 'first commit'.
-[master (root-commit) beafcfa] first commit
- 12 files changed, 363 insertions(+)
- create mode 100644 .gitignore
- create mode 100644 README.md
- create mode 100644 license.txt
->>> Creating the main branch.
-github.com
-  ✓ Logged in to github.com as shinokada (~/.config/gh/hosts.yml)
-  ✓ Git operations for github.com configured to use ssh protocol.
-  ✓ Token: *******************
-
->>> You are logged in. Creating your my_new_repo in remote.
-? Visibility Public
-? This will create 'my_new_repo' in your current directory. Continue?  Yes
-✓ Created repository shinokada/my_new_repo on GitHub
-✓ Added remote git@github.com:shinokada/my_new_repo.git
-fatal: remote origin already exists.
->>> Pushing local repo to the remote.
-Enumerating objects: 7, done.
-Counting objects: 100% (7/7), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (6/6), done.
-Writing objects: 100% (7/7), 5.44 KiB | 2.72 MiB/s, done.
-Total 7 (delta 0), reused 0 (delta 0)
-To github.com:shinokada/my_new_repo.git
- * [new branch]      main -> main
-Branch 'main' set up to track remote branch 'main' from 'origin'.
->>> You have created a github repo at https://github.com/shinokada/my_new_repo
+4) None
+5) Quit
+Your lisence: 1
+MIT
 ```
 
-If you prefer not to add `.gitignore`.
+- Select a visibility.
+
+```sh
+>>> You are logged in. Creating your newtest in remote.
+? Visibility  [Use arrows to move, type to filter]
+> Public
+  Private
+  Internal
+```
+
+- Yes to add an origin git remote to your local repo.
+
+```sh
+? This will add an "origin" git remote to your local repository. Continue? Yes
+```
+
+### Adding programming language .gitignore
+
+By adding a programming language, it will add `.gitignore` file.
 
 ```bash
-# start it
-$ gitstart
+# For Python
+$ gitstart -d ./repo_name -l python
+# For Go
+$ gitstart -d ./repo_name -l go
 ```
 
 ## About Licensing

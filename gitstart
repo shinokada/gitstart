@@ -47,6 +47,8 @@ Examples:
 
     $script_name -l python -d newrepo
     $script_name -d newrepo
+    # in a directory
+    $script_name -d .
     $script_name -h
 EOF
     exit 2
@@ -77,6 +79,12 @@ while (($# > 0)); do # while arguments count>0
 done
 
 ############# Main body ############
+# check if you are logged in github
+if [[ $(gh auth status) -eq 1 ]]; then
+    # not logged-in
+    echo ">>> You must logged in. Use 'gh auth login'"
+    exit 1
+fi
 
 # don't allow to create a git repo in the ~
 # user may use . in the HOME
@@ -106,6 +114,15 @@ if [ ! "$(command -v yq)" ]; then
     exit 2
 fi
 
+# Directory path. If dir is . then use pwd
+if [[ ${dir} = "." ]]; then
+    dir=$(pwd)
+else
+    echo ">>> Creating ${dir}."
+    mkdir -p "${dir}" || exit
+    cd "${dir}" || exit
+fi
+
 user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
 
 repo=$(basename "${dir}")
@@ -113,6 +130,7 @@ license_url="mit"
 echo ">>> Your github username is ${user}."
 echo ">>> Your new repo name is ${repo}."
 
+# lisence
 PS3='Your lisence: '
 lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
 
@@ -147,7 +165,9 @@ select license in "${lisences[@]}"; do
 done
 
 if [[ ${license_url} != false ]]; then
-    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt
+    touch "${dir}"/license.txt
+    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt 
+    echo ">>> license.txt created."
 fi
 
 if [[ ${prog_lang} ]]; then
@@ -164,14 +184,12 @@ if [[ ${prog_lang} ]]; then
         echo ">>> .gitignore created."
     else
         echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-        echo ">>> We proceed without .gitignore."
+        echo ">>> Proceeding without .gitignore."
     fi
 fi
-echo "${dir}"
-echo ">>> Creating ${dir}."
-mkdir -p "${dir}" || exit
-cd "${dir}" || exit
-echo ">>> Creating READMR.md."
+
+# README
+echo ">>> Creating README.md."
 printf "# %s \n
 ## Overview\n\n
 ## Requirement\n\n
@@ -182,6 +200,8 @@ printf "# %s \n
 ## Licence
 
 Please see license.txt.\n" "${repo}" >README.md
+
+# git commands
 echo ">>> Running git init."
 git init
 echo ">>> Adding README.md and .gitignore."
@@ -191,16 +211,12 @@ git commit -m "first commit"
 echo ">>> Creating the main branch."
 git branch -M main
 
-# check if you are logged in
-if [[ $(gh auth status) -eq 1 ]]; then
-    # not logged-in
-    echo ">>> You must logged in. Use 'gh auth login'"
-    exit 1
-else
-    echo ">>> You are logged in. Creating your ${repo} in remote."
-    gh repo create "${repo}"
-    git remote add origin git@github.com:"${user}"/"${repo}".git
-    echo ">>> Pushing local repo to the remote."
-    git push -u origin main
-    echo ">>> You have created a github repo at https://github.com/${user}/${repo}"
-fi
+echo ">>> Creating your ${repo} in remote."
+gh repo create "${repo}"
+git remote add origin git@github.com:"${user}"/"${repo}".git
+echo ">>> Pushing local repo to the remote."
+git push -u origin main
+echo ">>> You have created a github repo at https://github.com/${user}/${repo}"
+
+
+exit 0
