@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.0"
+version="0.2.1"
 
 usage() {
     cat <<EOF
