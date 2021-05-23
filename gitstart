@@ -14,33 +14,33 @@ version="0.2.1"
 usage() {
     cat <<EOF
 
-Script name:
-=====
-
-$script_name
+Script name: $script_name
 
 Description:
 ============
 
 This script automate creating git repo.
-This will create a dir, add a license, README file, run git init and push to Github.
+This will create a dir, add a license, README file, run git init and push to Github. 
+
+If a language is added, it will try to add the .gitignore.
 Choose SSH as the default git protocol.
 
 List of .gitignore supported by Github
 ======================================
 
-- https://github.com/github/gitignore
+See https://github.com/github/gitignore
 
 Dependencies:
 =============
 
-- GitHub CLI https://cli.github.com/manual/
-- yq https://github.com/mikefarah/yq
+- gh, GitHub CLI https://cli.github.com/manual/
+- yq, https://github.com/mikefarah/yq
+- jq
 
 Usage:
 ======
 
-$script_name [ -l | --lang programming_language ] [ -d | --dir directory ]
+$script_name [ -l | --lang programming_language ] [ -d | --dir directory ] [ -h | --help | -v | --version]
 
 Examples:
 =========
@@ -49,7 +49,10 @@ Examples:
     $script_name -d newrepo
     # in a directory
     $script_name -d .
+    # Show help
     $script_name -h
+    # Show version
+    $script_name -v
 EOF
     exit 2
 }
