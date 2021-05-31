@@ -1,4 +1,4 @@
-# Gitstart
+# Gitstart for macOS/Linux
 
 [Please read more details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
 
@@ -21,38 +21,89 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 
 ## Requirements
 
+
+- [gh](https://cli.github.com/)
 - [jq](https://stedolan.github.io/jq/)
 - [GitHub CLI](https://cli.github.com/manual/).
-- [yq@3](https://github.com/mikefarah/yq)
+- [yq](https://github.com/mikefarah/yq)
+
+**Login to Github using `gh`.**
 
 ## Installation
 
-- Using homebrew:
+### macOS using Homebrew
+
+If you have Homebrew on your macOS, your can run:
 
 ```sh
 brew tap shinokada/gitstart && brew install gitstart
 ```
 
-- Manually
+### Linux
 
-Download the gitstart file or cron this repo.
-Make the file executable.
+On Ubuntu install `yq`:
 
-```bash
-# change permission
-$ chmod 755 gitstart
+```sh
+sudo snap install yq
 ```
 
-Create a `~/bin` directory and add the path to your terminal config file, `~/.zshrc` or `~/.bashrc`.
+I keep `gitstart` in the /home/your-username/awesome directory:
 
-```.zshrc
-export PATH="~/bin:$PATH"
+```sh
+mkdir /home/your-username/awesome
+cd /home/shin/awesome
+git clone https://github.com/shinokada/manop.git
+```
+
+Create the `~/bin` directory:
+
+```sh
+mkdir ~/bin
+```
+
+Check if /home/your-username/bin in the PATH variable:
+
+```sh
+echo $PATH
+/home/your-username/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+```
+
+If not add the /home/your-username/bin directory to the ~/.bashrc file.
+
+```sh
+export PATH="/home/your-username/bin:$PATH"
+```
+
+Source the ~/.bashrc file and check it again:
+
+```sh
+source ~/.bashrc
+echo $PATH
+```
+
+Add a symlink:
+
+```sh
+ln -s /home/your-username/awesome/giststart/gitstart ~/bin/gitstart
+```
+
+Check if the symlink is working:
+
+```
+which gitstart
+/home/your-username/bin/gitstart
+gitstart -h
+
+Script name: gitstart
+
+Description:
+...
 ```
 
 ## Usage
 
 - Login github using `gh auth login`.
-- Choose SSH as the default git protocol when you login.
+- Choose SSH or HTTPS for the default git protocol when you login.
 
 ```sh
 # define a dir path
