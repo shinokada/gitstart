@@ -47,11 +47,11 @@ On Ubuntu install `yq`:
 sudo snap install yq
 ```
 
-I keep `gitstart` in the /home/your-username/awesome directory:
+I keep `gitstart` in the `/home/your-username/awesome` directory:
 
 ```sh
 mkdir /home/your-username/awesome
-cd /home/shin/awesome
+cd /home/your-username/awesome
 git clone https://github.com/shinokada/manop.git
 ```
 
@@ -61,20 +61,20 @@ Create the `~/bin` directory:
 mkdir ~/bin
 ```
 
-Check if /home/your-username/bin in the PATH variable:
+Check if `/home/your-username/bin` in the PATH variable:
 
 ```sh
 echo $PATH
 /home/your-username/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 ```
 
-If not add the /home/your-username/bin directory to the ~/.bashrc file.
+If not add the `/home/your-username/bin` directory to the ~/.bashrc file.
 
 ```sh
 export PATH="/home/your-username/bin:$PATH"
 ```
 
-Source the ~/.bashrc file and check it again:
+Source the `~/.bashrc` file and check it again:
 
 ```sh
 source ~/.bashrc
