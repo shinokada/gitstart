@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.2"
+version="0.2.3"
 
 usage() {
     cat <<EOF
@@ -169,7 +169,7 @@ done
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/license.txt
-    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt 
+    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt
     echo ">>> license.txt created."
 fi
 
@@ -187,7 +187,9 @@ if [[ ${prog_lang} ]]; then
         echo ">>> .gitignore created."
     else
         echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-        echo ">>> Proceeding without .gitignore."
+        echo ">>> Adding .gitignore with minimum contents."
+        touch .gitignore
+        echo "DS_Store" >.gitignore
     fi
 fi
 
@@ -220,6 +222,5 @@ git remote add origin git@github.com:"${user}"/"${repo}".git
 echo ">>> Pushing local repo to the remote."
 git push -u origin main
 echo ">>> You have created a github repo at https://github.com/${user}/${repo}"
-
 
 exit 0
