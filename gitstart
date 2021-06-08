@@ -89,10 +89,10 @@ if [[ $(gh auth status) -eq 1 ]]; then
     exit 1
 fi
 
-# don't allow to create a git repo in the ~
+# don't allow to create a git repo in the ~ (HOME)
 # user may use . in the HOME
 cwd=$(pwd)
-if [[ (${dir} = $HOME) || ($cwd = $HOME && ${dir} = ".") ]]; then
+if [[ (${dir} = "$HOME") || ($cwd = "$HOME" && ${dir} = ".") ]]; then
     echo "This script doesn't allow to create a git repo in the home directory."
     echo "Use another directory."
     exit 1
@@ -122,8 +122,9 @@ if [[ ${dir} = "." ]]; then
     dir=$(pwd)
 else
     echo ">>> Creating ${dir}."
-    mkdir -p "${dir}" || exit
-    cd "${dir}" || exit
+    dir="$(pwd)/$dir"
+    mkdir -p "$dir" || exit
+    # cd "$dir" || exit
 fi
 
 user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
@@ -166,6 +167,9 @@ select license in "${lisences[@]}"; do
     *) echo "Invalid option $REPLY" ;;
     esac
 done
+
+echo "$dir"
+cd "$dir" || exit
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/license.txt
