@@ -193,12 +193,12 @@ if [[ ${prog_lang} ]]; then
         echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
         echo ">>> Adding .gitignore with minimum contents."
         touch "${dir}/.gitignore"
-        echo "DS_Store" >"${dir}/.gitignore"
+        echo ".DS_Store" >"${dir}/.gitignore"
     fi
 else
     echo ">>> Adding .gitignore with minimum contents."
     touch "${dir}/.gitignore"
-    echo "DS_Store" >"${dir}/.gitignore"
+    echo ".DS_Store" >"${dir}/.gitignore"
 fi
 
 # README
