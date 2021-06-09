@@ -21,7 +21,6 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 
 ## Requirements
 
-
 - [gh](https://cli.github.com/)
 - [jq](https://stedolan.github.io/jq/)
 - [GitHub CLI](https://cli.github.com/manual/).
@@ -39,7 +38,15 @@ If you have Homebrew on your macOS, your can run:
 brew tap shinokada/gitstart && brew install gitstart
 ```
 
-### Linux
+### Linux/macOS using Awesome
+
+After installing [Awesome package manager](https://github.com/shinokada/awesome):
+
+```sh
+awesome -i shinokada/gitstart
+```
+
+### Manual
 
 On Ubuntu install `yq`:
 

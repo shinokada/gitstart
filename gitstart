@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.4"
+version="0.2.5"
 
 usage() {
     cat <<EOF
@@ -195,6 +195,10 @@ if [[ ${prog_lang} ]]; then
         touch "${dir}/.gitignore"
         echo "DS_Store" >"${dir}/.gitignore"
     fi
+else
+    echo ">>> Adding .gitignore with minimum contents."
+    touch "${dir}/.gitignore"
+    echo "DS_Store" >"${dir}/.gitignore"
 fi
 
 # README
