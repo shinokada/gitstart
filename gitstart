@@ -54,7 +54,6 @@ Examples:
     # Show version
     $script_name -v
 EOF
-    exit 2
 }
 
 while (($# > 0)); do # while arguments count>0
@@ -65,10 +64,11 @@ while (($# > 0)); do # while arguments count>0
         ;;
     -d | --dir)
         dir=$2
-        shift
+        shift 2
         ;;
     -h | --help)
         usage
+        exit
         ;;
     -v | --version)
         echo ${version}
@@ -114,6 +114,13 @@ fi
 if [ ! "$(command -v yq)" ]; then
     echo "Please install yq from https://github.com/mikefarah/yq."
     echo "Or run brew install yq"
+    exit 2
+fi
+
+# check if you have yq
+if [ ! "$(command -v jq)" ]; then
+    echo "Please install jq from https://stedolan.github.io/jq/."
+    echo "Or run brew install jq"
     exit 2
 fi
 
@@ -210,7 +217,7 @@ printf "# %s \n
 ## Features\n\n
 ## Reference\n\n
 ## Author\n\n
-## Licence
+## License
 
 Please see license.txt.\n" "${repo}" >README.md
 
