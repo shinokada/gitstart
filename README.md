@@ -4,9 +4,6 @@
 
 [Find the update at Github.](https://github.com/shinokada/gitstart)
 
-[![Shin's GitHub stats](https://github-readme-stats.vercel.app/api?username=anuraghazra)](https://github.com/shinokada/github-readme-stats)
-
-
 ## Overview
 
 > Gitstart creates, adds, and pushes with one line.
