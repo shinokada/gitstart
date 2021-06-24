@@ -3,11 +3,7 @@
 </p>
 <h1  align="center">Gitstart</h1>
 
-
-
-[Please read more details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
-
-[Find the update at Github.](https://github.com/shinokada/gitstart)
+[More details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
 
 ## Overview
 
@@ -35,20 +31,20 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 
 ## Installation
 
-### macOS using Homebrew
-
-If you have Homebrew on your macOS, your can run:
-
-```sh
-brew tap shinokada/gitstart && brew install gitstart
-```
-
 ### Linux/macOS using Awesome
 
 After installing [Awesome package manager](https://github.com/shinokada/awesome):
 
 ```sh
 awesome -i shinokada/gitstart
+```
+
+### macOS using Homebrew
+
+If you have Homebrew on your macOS, your can run:
+
+```sh
+brew tap shinokada/gitstart && brew install gitstart
 ```
 
 ### Manual
