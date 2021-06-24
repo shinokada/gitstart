@@ -1,5 +1,5 @@
 <p align="center">
-<img width="400" src="https://raw.githubusercontent.com/shinokada/gitstart/main/images/gitstart.gif" />
+<img width="400" src="https://raw.githubusercontent.com/shinokada/gitstart/main/images/gitstart.png" />
 </p>
 <h1  align="center">Gitstart</h1>
 
