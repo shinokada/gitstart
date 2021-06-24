@@ -1,4 +1,9 @@
-# Gitstart for macOS/Linux
+<p align="center">
+<img width="400" src="https://raw.githubusercontent.com/shinokada/typelet/main/images/gitstart.gif" />
+</p>
+<h1  align="center">Gitstart</h1>
+
+
 
 [Please read more details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
 
