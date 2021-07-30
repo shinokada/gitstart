@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.5"
+version="0.2.6"
 
 usage() {
     cat <<EOF
@@ -132,17 +132,14 @@ else
     # cd "$dir" || exit
 fi
 
-# user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
-
 repo=$(basename "${dir}")
-# license_url="mit"
-# echo ">>> Your github username is ${user}."
 echo ">>> Your new repo name is ${repo}."
-
-# echo "$dir"
 cd "$dir" || exit
 
-
+echo ">>> Creating your ${repo} in remote."
+gh repo create "${repo}" 2>/dev/null
+# gh created a repo pull the files from remote
+git pull origin main
 # README
 echo ">>> Creating README.md."
 printf "# %s \n
@@ -156,8 +153,6 @@ printf "# %s \n
 
 Please see license.txt.\n" "${repo}" >README.md
 
-echo ">>> Creating your ${repo} in remote."
-gh repo create "${repo}" 2>/dev/null
 echo ">>> Adding README.md."
 git add .
 echo ">>> Commiting ..."
