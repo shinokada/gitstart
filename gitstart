@@ -136,10 +136,12 @@ repo=$(basename "${dir}")
 echo ">>> Your new repo name is ${repo}."
 cd "$dir" || exit
 
-echo ">>> Creating your ${repo} in remote."
+echo ">>> Creating ${repo} in the remote..."
 gh repo create "${repo}" 2>/dev/null
+echo ">>> Pulling from the remote..."
 # gh created a repo pull the files from remote
-git pull origin main
+# git pull origin main –allow-unrelated-histories
+gh repo clone "${repo}"
 # README
 echo ">>> Creating README.md."
 printf "# %s \n
