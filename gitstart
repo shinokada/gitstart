@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.6"
+version="0.2.7"
 
 usage() {
     cat <<EOF
@@ -34,8 +34,6 @@ Dependencies:
 =============
 
 - gh, GitHub CLI https://cli.github.com/manual/
-- yq, https://github.com/mikefarah/yq
-- jq
 
 Usage:
 ======
@@ -58,14 +56,6 @@ EOF
 
 while (($# > 0)); do # while arguments count>0
     case "$1" in
-    -l | --lang)
-        prog_lang=$2
-        shift
-        ;;
-    -d | --dir)
-        dir=$2
-        shift 2
-        ;;
     -h | --help)
         usage
         exit
@@ -74,8 +64,8 @@ while (($# > 0)); do # while arguments count>0
         echo ${version}
         exit
         ;;
-    *) # unknown flag/switch
-        POSITIONAL+=("$1")
+    *) # directory
+        dir="$1"
         shift
         ;;
     esac
@@ -91,8 +81,7 @@ fi
 
 # don't allow to create a git repo in the ~ (HOME)
 # user may use . in the HOME
-cwd=$(pwd)
-if [[ (${dir} = "$HOME") || ($cwd = "$HOME" && ${dir} = ".") ]]; then
+if [[ ${dir} = "$HOME" ]]; then
     echo "This script doesn't allow to create a git repo in the home directory."
     echo "Use another directory."
     exit 1
@@ -100,8 +89,7 @@ fi
 
 # if dir is empty exit
 if [[ -z ${dir} ]]; then
-    echo "You must set -d dir_name."
-    exit
+    dir=$(pwd)
 fi
 
 # check if you have Github CLI
@@ -110,38 +98,27 @@ if [ ! "$(command -v gh)" ]; then
     exit 2
 fi
 
-# check if you have yq
-if [ ! "$(command -v yq)" ]; then
-    echo "Please install yq from https://github.com/mikefarah/yq."
-    exit 2
-fi
-
-# check if you have yq
-if [ ! "$(command -v jq)" ]; then
-    echo "Please install jq from https://stedolan.github.io/jq/."
-    exit 2
-fi
-
-# Directory path. If dir is . then use pwd
-if [[ ${dir} = "." ]]; then
-    dir=$(pwd)
-else
-    echo ">>> Creating ${dir}."
-    dir="$(pwd)/$dir"
-    mkdir -p "$dir" || exit
-    # cd "$dir" || exit
-fi
+echo ">>> Creating ${dir}."
+mkdir -p "$dir" || exit
 
 repo=$(basename "${dir}")
 echo ">>> Your new repo name is ${repo}."
+# ask github username
+echo "Please enter your Github username."
+read -r USERNAME
+echo "$USERNAME" > "$HOME/.config/gitstart"
 cd "$dir" || exit
 
 echo ">>> Creating ${repo} in the remote..."
 gh repo create "${repo}" 2>/dev/null
-echo ">>> Pulling from the remote..."
+echo ">>> Running git init."
+git init
+echo ">>> Cloning the remote repo to local..."
+git clone "git@github.com:${USERNAME}/${repo}.git"
+
 # gh created a repo pull the files from remote
 # git pull origin main –allow-unrelated-histories
-gh repo clone "${repo}"
+# gh repo clone "${repo}"
 # README
 echo ">>> Creating README.md."
 printf "# %s \n

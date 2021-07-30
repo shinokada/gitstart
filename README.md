@@ -23,12 +23,7 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 ## Requirements
 
 - UNIX-lie (Tested on Ubuntu and MacOS.)
-- [gh](https://cli.github.com/)
-- [jq](https://stedolan.github.io/jq/)
 - [GitHub CLI](https://cli.github.com/manual/).
-- [yq](https://github.com/mikefarah/yq)
-
-**Login to Github using `gh`.**
 
 ## Installation
 
@@ -37,7 +32,7 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 After installing [Awesome package manager](https://github.com/shinokada/awesome):
 
 ```sh
-awesome -i shinokada/gitstart
+awesome install shinokada/gitstart
 ```
 
 ### macOS using Homebrew
@@ -48,67 +43,6 @@ If you have Homebrew on your macOS, your can run:
 brew tap shinokada/gitstart && brew install gitstart
 ```
 
-### Manual
-
-On Ubuntu install `yq`:
-
-```sh
-sudo snap install yq
-```
-
-I keep `gitstart` in the `/home/your-username/awesome` directory:
-
-```sh
-mkdir /home/your-username/awesome
-cd /home/your-username/awesome
-git clone https://github.com/shinokada/manop.git
-```
-
-Create the `~/bin` directory:
-
-```sh
-mkdir ~/bin
-```
-
-Check if `/home/your-username/bin` in the PATH variable:
-
-```sh
-echo $PATH
-/home/your-username/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
-```
-
-If not add the `/home/your-username/bin` directory to the ~/.bashrc file.
-
-```sh
-export PATH="/home/your-username/bin:$PATH"
-```
-
-Source the `~/.bashrc` file and check it again:
-
-```sh
-source ~/.bashrc
-echo $PATH
-```
-
-Add a symlink:
-
-```sh
-ln -s /home/your-username/awesome/giststart/gitstart ~/bin/gitstart
-```
-
-Check if the symlink is working:
-
-```
-which gitstart
-/home/your-username/bin/gitstart
-gitstart -h
-
-Script name: gitstart
-
-Description:
-...
-```
-
 ## Usage
 
 - Login github using `gh auth login`.
@@ -116,10 +50,10 @@ Description:
 
 ```sh
 # define a dir path
-gitstart -d new-repo
+gitstart repo-name
 # in a current dir
 cd new_repo
-gitstart -d .
+gitstart
 ```
 
 - Select a license.
@@ -149,17 +83,6 @@ MIT
 
 ```sh
 ? This will add an "origin" git remote to your local repository. Continue? Yes
-```
-
-### Adding programming language .gitignore
-
-By adding a programming language, it will add `.gitignore` file.
-
-```bash
-# For Python
-$ gitstart -d ./repo_name -l python
-# For Go
-$ gitstart -d ./repo_name -l go
 ```
 
 ## About Licensing
