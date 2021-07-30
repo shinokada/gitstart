@@ -2,7 +2,7 @@
 
 ########################
 # Author: Shinichi Okada
-# Date: 2021-05-22
+# Date: 2021-07-01
 ###########################
 
 unset user dir repo license_url
@@ -10,6 +10,7 @@ unset user dir repo license_url
 script_name=$(basename "$0")
 dir=""
 version="0.2.7"
+CONFIG="$HOME/.config/gitstart"
 
 usage() {
     cat <<EOF
@@ -98,24 +99,23 @@ if [ ! "$(command -v gh)" ]; then
     exit 2
 fi
 
-echo ">>> Creating ${dir}."
-mkdir -p "$dir" || exit
 
 repo=$(basename "${dir}")
 echo ">>> Your new repo name is ${repo}."
-# ask github username
-echo "Please enter your Github username."
-read -r USERNAME
-echo "$USERNAME" > "$HOME/.config/gitstart"
-cd "$dir" || exit
+if [ -s "$CONFIG" ];then
+    USERNAME=$(cat "$CONFIG") 
+else
+    # ask github username
+    printf "Please enter your Github username.  "
+    read -r USERNAME
+    echo "$USERNAME" > "$HOME/.config/gitstart"
+fi
+
 
 echo ">>> Creating ${repo} in the remote..."
 gh repo create "${repo}" 2>/dev/null
-echo ">>> Running git init."
-git init
-echo ">>> Cloning the remote repo to local..."
-git clone "git@github.com:${USERNAME}/${repo}.git"
 
+cd "$dir" || exit
 # gh created a repo pull the files from remote
 # git pull origin main –allow-unrelated-histories
 # gh repo clone "${repo}"
