@@ -116,7 +116,7 @@ Description:
 
 ```sh
 # define a dir path
-gitstart -d ./path
+gitstart -d new-repo
 # in a current dir
 cd new_repo
 gitstart -d .

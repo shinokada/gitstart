@@ -9,7 +9,7 @@ unset user dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.4"
+version="0.2.5"
 
 usage() {
     cat <<EOF
@@ -113,14 +113,12 @@ fi
 # check if you have yq
 if [ ! "$(command -v yq)" ]; then
     echo "Please install yq from https://github.com/mikefarah/yq."
-    echo "Or run brew install yq"
     exit 2
 fi
 
 # check if you have yq
 if [ ! "$(command -v jq)" ]; then
     echo "Please install jq from https://stedolan.github.io/jq/."
-    echo "Or run brew install jq"
     exit 2
 fi
 
@@ -134,79 +132,16 @@ else
     # cd "$dir" || exit
 fi
 
-user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
+# user=$(yq e '."github.com".user' "$HOME"/.config/gh/hosts.yml)
 
 repo=$(basename "${dir}")
-license_url="mit"
-echo ">>> Your github username is ${user}."
+# license_url="mit"
+# echo ">>> Your github username is ${user}."
 echo ">>> Your new repo name is ${repo}."
 
-# lisence
-PS3='Your lisence: '
-lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
-
-echo "Select a license: "
-select license in "${lisences[@]}"; do
-    case ${license} in
-    "MIT: I want it simple and permissive.")
-        echo "MIT"
-        break
-        ;;
-    "Apache License 2.0: I need to work in a community.")
-        echo "Apache"
-        license_url="apache-2.0"
-        break
-        ;;
-    "GNU GPLv3: I care about sharing improvements.")
-        echo "GNU"
-        license_url="lgpl-3.0"
-        break
-        ;;
-    "None")
-        echo "License None"
-        license_url=false
-        break
-        ;;
-    "Quit")
-        echo "User requested exit."
-        exit
-        ;;
-    *) echo "Invalid option $REPLY" ;;
-    esac
-done
-
-echo "$dir"
+# echo "$dir"
 cd "$dir" || exit
 
-if [[ ${license_url} != false ]]; then
-    touch "${dir}"/license.txt
-    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/license.txt
-    echo ">>> license.txt created."
-fi
-
-if [[ ${prog_lang} ]]; then
-    # github gitignore url
-    url=https://raw.githubusercontent.com/github/gitignore/master/"${prog_lang^}".gitignore
-    # get the status http code, 200, 404 etc.
-    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "${url}")
-
-    if [[ $http_status -eq 200 ]]; then
-        # get argument e.g python, go etc, capitalize it
-        echo ">>> Creating .gitignore for ${1^}..."
-        # create .gitignore
-        curl "${url}" -o .gitignore
-        echo ">>> .gitignore created."
-    else
-        echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-        echo ">>> Adding .gitignore with minimum contents."
-        touch "${dir}/.gitignore"
-        echo ".DS_Store" >"${dir}/.gitignore"
-    fi
-else
-    echo ">>> Adding .gitignore with minimum contents."
-    touch "${dir}/.gitignore"
-    echo ".DS_Store" >"${dir}/.gitignore"
-fi
 
 # README
 echo ">>> Creating README.md."
@@ -221,21 +156,12 @@ printf "# %s \n
 
 Please see license.txt.\n" "${repo}" >README.md
 
-# git commands
-echo ">>> Running git init."
-git init
-echo ">>> Adding README.md and .gitignore."
-git add .
-echo ">>> Commiting with a message 'first commit'."
-git commit -m "first commit"
-echo ">>> Creating the main branch."
-git branch -M main
-
 echo ">>> Creating your ${repo} in remote."
-gh repo create "${repo}"
-git remote add origin git@github.com:"${user}"/"${repo}".git
+gh repo create "${repo}" 2>/dev/null
+echo ">>> Adding README.md."
+git add .
+echo ">>> Commiting ..."
+git commit -m "README added."
 echo ">>> Pushing local repo to the remote."
 git push -u origin main
-echo ">>> You have created a github repo at https://github.com/${user}/${repo}"
-
 exit 0
