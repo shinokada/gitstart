@@ -5,12 +5,11 @@
 # Date: 2021-07-01
 ###########################
 
-unset user dir repo license_url
+unset github_username dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.7"
-CONFIG="$HOME/.config/gitstart"
+version="0.2.8"
 
 usage() {
     cat <<EOF
@@ -30,11 +29,6 @@ List of .gitignore supported by Github
 ======================================
 
 See https://github.com/github/gitignore
-
-Dependencies:
-=============
-
-- gh, GitHub CLI https://cli.github.com/manual/
 
 Usage:
 ======
@@ -57,6 +51,14 @@ EOF
 
 while (($# > 0)); do # while arguments count>0
     case "$1" in
+    -l | --lang)
+        prog_lang=$2
+        shift
+        ;;
+    -d | --dir)
+        dir=$2
+        shift 2
+        ;;
     -h | --help)
         usage
         exit
@@ -65,24 +67,19 @@ while (($# > 0)); do # while arguments count>0
         echo ${version}
         exit
         ;;
-    *) # directory
-        dir="$1"
+    *) # unknown flag/switch
+        POSITIONAL+=("$1")
         shift
         ;;
     esac
 done
 
 ############# Main body ############
-# check if you are logged in github
-if [[ $(gh auth status) -eq 1 ]]; then
-    # not logged-in
-    echo ">>> You must logged in. Use 'gh auth login'"
-    exit 1
-fi
 
 # don't allow to create a git repo in the ~ (HOME)
 # user may use . in the HOME
-if [[ ${dir} = "$HOME" ]]; then
+cwd=$(pwd)
+if [[ (${dir} = "$HOME") || ($cwd = "$HOME" && ${dir} = ".") ]]; then
     echo "This script doesn't allow to create a git repo in the home directory."
     echo "Use another directory."
     exit 1
@@ -90,35 +87,100 @@ fi
 
 # if dir is empty exit
 if [[ -z ${dir} ]]; then
+    echo "You must set -d dir_name."
+    exit
+fi
+
+# check if you have yq
+if [ ! "$(command -v jq)" ]; then
+    echo "Please install jq from https://stedolan.github.io/jq/."
+    exit 1
+fi
+
+# Directory path. If dir is . then use pwd
+if [[ ${dir} = "." ]]; then
     dir=$(pwd)
+else
+    echo ">>> Creating ${dir}."
+    dir="$(pwd)/$dir"
+    mkdir -p "$dir" || exit
+    # cd "$dir" || exit
 fi
 
-# check if you have Github CLI
-if [ ! "$(command -v gh)" ]; then
-    echo "Please install Github CLI from https://cli.github.com/manual/."
-    exit 2
-fi
-
+printf "Please type your Github username. "
+read -r github_username
 
 repo=$(basename "${dir}")
+license_url="mit"
+echo ">>> Your github username is ${github_username}."
 echo ">>> Your new repo name is ${repo}."
-if [ -s "$CONFIG" ];then
-    USERNAME=$(cat "$CONFIG") 
-else
-    # ask github username
-    printf "Please enter your Github username.  "
-    read -r USERNAME
-    echo "$USERNAME" > "$HOME/.config/gitstart"
-fi
 
+# lisence
+PS3='Your lisence: '
+lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
 
-echo ">>> Creating ${repo} in the remote..."
-gh repo create "${repo}" 2>/dev/null
+echo "Select a license: "
+select license in "${lisences[@]}"; do
+    case ${license} in
+    "MIT: I want it simple and permissive.")
+        echo "MIT"
+        break
+        ;;
+    "Apache License 2.0: I need to work in a community.")
+        echo "Apache"
+        license_url="apache-2.0"
+        break
+        ;;
+    "GNU GPLv3: I care about sharing improvements.")
+        echo "GNU"
+        license_url="lgpl-3.0"
+        break
+        ;;
+    "None")
+        echo "License None"
+        license_url=false
+        break
+        ;;
+    "Quit")
+        echo "User requested exit."
+        exit
+        ;;
+    *) echo "Invalid option $REPLY" ;;
+    esac
+done
 
 cd "$dir" || exit
-# gh created a repo pull the files from remote
-# git pull origin main –allow-unrelated-histories
-# gh repo clone "${repo}"
+
+if [[ ${license_url} != false ]]; then
+    touch "${dir}"/LICENSE
+    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/LICENSE
+    echo ">>> LICENSE is created."
+fi
+
+if [[ ${prog_lang} ]]; then
+    # github gitignore url
+    url=https://raw.githubusercontent.com/github/gitignore/master/"${prog_lang^}".gitignore
+    # get the status http code, 200, 404 etc.
+    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "${url}")
+
+    if [[ $http_status -eq 200 ]]; then
+        # get argument e.g python, go etc, capitalize it
+        echo ">>> Creating .gitignore for ${1^}..."
+        # create .gitignore
+        curl "${url}" -o .gitignore
+        echo ">>> .gitignore created."
+    else
+        echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
+        echo ">>> Adding .gitignore with minimum contents."
+        touch "${dir}/.gitignore"
+        echo ".DS_Store" >"${dir}/.gitignore"
+    fi
+else
+    echo ">>> Adding .gitignore with minimum contents."
+    touch "${dir}/.gitignore"
+    echo ".DS_Store" >"${dir}/.gitignore"
+fi
+
 # README
 echo ">>> Creating README.md."
 printf "# %s \n
@@ -132,10 +194,19 @@ printf "# %s \n
 
 Please see license.txt.\n" "${repo}" >README.md
 
-echo ">>> Adding README.md."
+# git commands
+echo ">>> Running git init."
+git init
+echo ">>> Adding README.md and .gitignore."
 git add .
-echo ">>> Commiting ..."
-git commit -m "README added."
+echo ">>> Commiting with a message 'first commit'."
+git commit -m "first commit"
+echo ">>> Creating the main branch."
+git branch -M main
+echo ">>> Creating your ${repo} in remote."
+git remote add origin git@github.com:"${github_username}"/"${repo}".git
 echo ">>> Pushing local repo to the remote."
 git push -u origin main
+echo ">>> You have created a github repo at https://github.com/${github_username}/${repo}"
+
 exit 0
