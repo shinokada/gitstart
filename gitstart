@@ -10,7 +10,7 @@ unset github_username dir repo license_url
 script_name=$(basename "$0")
 dir=""
 version="0.2.10"
-gitstart_cofig=$HOME/.gitstart_cofig
+gitstart_cofig=$HOME/.gitstart_config
 
 usage() {
     cat <<EOF
@@ -87,6 +87,12 @@ if [ ! "$(command -v jq)" ]; then
 fi
 
 ############# Main body ############
+# check if you are logged in github
+if [[ $(gh auth status) -eq 1 ]]; then
+    # not logged-in
+    echo ">>> You must logged in. Use 'gh auth login'"
+    exit 1
+fi
 
 # Directory path. If dir is . then use pwd
 if [[ ${dir} = "." ]]; then
