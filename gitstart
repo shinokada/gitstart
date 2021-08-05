@@ -9,7 +9,7 @@ unset github_username dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.8"
+version="0.2.9"
 
 usage() {
     cat <<EOF
