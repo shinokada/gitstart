@@ -9,7 +9,8 @@ unset github_username dir repo license_url
 
 script_name=$(basename "$0")
 dir=""
-version="0.2.9"
+version="0.2.10"
+gitstart_cofig=$HOME/.gitstart_cofig
 
 usage() {
     cat <<EOF
@@ -74,26 +75,22 @@ while (($# > 0)); do # while arguments count>0
     esac
 done
 
-############# Main body ############
-
-# don't allow to create a git repo in the ~ (HOME)
-# user may use . in the HOME
-cwd=$(pwd)
-if [[ (${dir} = "$HOME") || ($cwd = "$HOME" && ${dir} = ".") ]]; then
-    echo "This script doesn't allow to create a git repo in the home directory."
-    echo "Use another directory."
+##### check
+if [ ! "$(command -v gh)" ]; then
+    echo "Please install gh from https://github.com/cli/cli#installation."
     exit 1
 fi
 
-# if dir is empty exit
-if [[ -z ${dir} ]]; then
-    echo "You must set -d dir_name."
-    exit
-fi
-
-# check if you have yq
 if [ ! "$(command -v jq)" ]; then
     echo "Please install jq from https://stedolan.github.io/jq/."
+    exit 1
+fi
+
+############# Main body ############
+# don't allow to create a git repo in the ~ (HOME)
+if [[ (${dir} = "$HOME") ]]; then
+    echo "This script doesn't allow to create a git repo in the home directory."
+    echo "Use another directory."
     exit 1
 fi
 
@@ -107,8 +104,25 @@ else
     # cd "$dir" || exit
 fi
 
-printf "Please type your Github username. "
-read -r github_username
+gitname() {
+    printf "Please type your Github username. "
+    read -r github_username
+    echo "$github_username" >"$gitstart_cofig"
+}
+
+if [ ! -s "$gitstart_cofig" ]; then
+    gitname
+else
+    github_username=$(cat "$gitstart_cofig")
+    echo "Is it correct your GitHub username is $github_username. y/yes/n/no"
+    read -r ANS
+    ans=$(echo "$ANS" | cut -c 1-1 | tr "[:lower:]" "[:upper:]")
+    if [[ $ans = "Y" ]]; then
+        :
+    else
+        gitname
+    fi
+fi
 
 repo=$(basename "${dir}")
 license_url="mit"
@@ -149,11 +163,15 @@ select license in "${lisences[@]}"; do
     esac
 done
 
+# echo "$dir"
+cd "$dir" || exit
+
 # creating a remote github repo using gh
 printf "Creating a public remote repo..."
-gh repo create "$dir" --confirm --public
-
-cd "$dir" || exit
+gh repo create --confirm --public || {
+    echo "Not able to create a remote repo."
+    exit 1
+}
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/LICENSE

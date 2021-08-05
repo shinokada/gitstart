@@ -24,6 +24,7 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 
 - UNIX-lie (Tested on Ubuntu and MacOS.)
 - [GitHub CLI](https://cli.github.com/manual/).
+- [jq](https://stedolan.github.io/jq/).
 
 ## Installation
 
