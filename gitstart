@@ -103,7 +103,7 @@ if [[ ${dir} = "." ]]; then
 else
     echo ">>> Creating ${dir}."
     dir="$(pwd)/$dir"
-    mkdir -p "$dir" || exit
+    # mkdir -p "$dir" || exit
     # cd "$dir" || exit
 fi
 
@@ -148,6 +148,10 @@ select license in "${lisences[@]}"; do
     *) echo "Invalid option $REPLY" ;;
     esac
 done
+
+# creating a remote github repo using gh
+printf "Creating a public remote repo..."
+gh repo create "$dir" --confirm --public
 
 cd "$dir" || exit
 
