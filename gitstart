@@ -170,7 +170,9 @@ fi
 cd "$dir" || exit
 
 # creating a remote github repo using gh
-printf "Creating a public remote repo..."
+printf "Creating a public remote repo %s" "$dir"
+echo ">>> Running git init."
+git init
 gh repo create --confirm --public || {
     echo "Not able to create a remote repo."
     exit 1
@@ -220,8 +222,7 @@ printf "# %s \n
 Please see license.txt.\n" "${repo}" >README.md
 
 # git commands
-echo ">>> Running git init."
-git init
+
 echo ">>> Adding README.md and .gitignore."
 git add .
 echo ">>> Commiting with a message 'first commit'."
