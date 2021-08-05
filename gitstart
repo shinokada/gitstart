@@ -87,12 +87,6 @@ if [ ! "$(command -v jq)" ]; then
 fi
 
 ############# Main body ############
-# don't allow to create a git repo in the ~ (HOME)
-if [[ (${dir} = "$HOME") ]]; then
-    echo "This script doesn't allow to create a git repo in the home directory."
-    echo "Use another directory."
-    exit 1
-fi
 
 # Directory path. If dir is . then use pwd
 if [[ ${dir} = "." ]]; then
@@ -102,6 +96,13 @@ else
     dir="$(pwd)/$dir"
     # mkdir -p "$dir" || exit
     # cd "$dir" || exit
+fi
+
+# don't allow to create a git repo in the ~ (HOME)
+if [[ (${dir} = "$HOME") ]]; then
+    echo "This script doesn't allow to create a git repo in the home directory."
+    echo "Use another directory."
+    exit 1
 fi
 
 gitname() {
@@ -163,9 +164,9 @@ select license in "${lisences[@]}"; do
     esac
 done
 
-# echo "$dir"
+echo "$dir"
 cd "$dir" || exit
-
+exit
 # creating a remote github repo using gh
 printf "Creating a public remote repo..."
 gh repo create --confirm --public || {
