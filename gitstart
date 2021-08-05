@@ -164,9 +164,11 @@ select license in "${lisences[@]}"; do
     esac
 done
 
-echo "$dir"
+if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+fi
 cd "$dir" || exit
-exit
+
 # creating a remote github repo using gh
 printf "Creating a public remote repo..."
 gh repo create --confirm --public || {
