@@ -46,7 +46,11 @@ brew tap shinokada/gitstart && brew install gitstart
 
 ### Debian/Ubuntu
 
-Download the latest version from [releases page](https://github.com/shinokada/gitstart/releases).
+Download the latest version from [releases page](https://github.com/shinokada/gitstart/releases) and run:
+
+```sh
+sudo apt install ./gitstart_version_all.deb
+```
 
 
 
