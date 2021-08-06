@@ -235,8 +235,6 @@ echo ">>> Commiting with a message 'first commit'."
 git commit -m "first commit"
 echo ">>> Creating the main branch."
 git branch -M main
-# echo ">>> Creating your ${repo} in remote."
-# git remote add origin git@github.com:"${github_username}"/"${repo}".git
 echo ">>> Pushing local repo to the remote."
 git push -u origin main
 echo ">>> You have created a github repo at https://github.com/${github_username}/${repo}"
