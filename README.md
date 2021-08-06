@@ -46,6 +46,8 @@ brew tap shinokada/gitstart && brew install gitstart
 
 ## Uninstallation
 
+If you install Gitstart either Awesome package manager/Homebrew/Debian package, then the following will uninstall Gistart.
+
 ```sh
 curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh > tmp1 && bash tmp1 && rm tmp1
 ```
@@ -53,27 +55,47 @@ curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh >
 ## Usage
 
 - Login github using `gh auth login`.
-- Choose SSH or HTTPS for the default git protocol when you login.
+- Starting gitstart
 
 ```sh
 # define a dir path
-gitstart repo-name
+gitstart -d repo-name
 # in a current dir
 cd new_repo
-gitstart
+gitstart .
 ```
 
-- Select a license.
+- Adding language preference
+
+```sh
+gitstart -d repo-name -l python
+```
+
+This will add python .gitignore as well.
+
+- The script asks you about your license preference.
   
 ```sh
+Is it correct your GitHub username is shinokada. y/yes/n/no
+y
+>>> Your github username is shinokada.
+>>> Your new repo name is test1.
 Select a license:
 1) MIT: I want it simple and permissive.
 2) Apache License 2.0: I need to work in a community.
 3) GNU GPLv3: I care about sharing improvements.
 4) None
 5) Quit
-Your lisence: 1
-MIT
+Your lisence: 2
+Apache
+Creating a public remote repo /Users/shinichiokada/Downloads/test1>>> Running git init.
+Initialized empty Git repository in /Users/shinichiokada/Downloads/test1/.git/
+? Repository name test1
+? Repository description test1 repo
+✓ Created repository shinokada/test1 on GitHub
+✓ Added remote git@github.com:shinokada/test1.git
+>>> LICENSE is created.
+>>> Creating .gitignore for ...
 ```
 
 - Select a visibility.
@@ -84,12 +106,6 @@ MIT
 > Public
   Private
   Internal
-```
-
-- Yes to add an origin git remote to your local repo.
-
-```sh
-? This will add an "origin" git remote to your local repository. Continue? Yes
 ```
 
 ## About Licensing
