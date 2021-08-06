@@ -23,20 +23,20 @@ case "$install_path" in
 *local/share*)
     # awesome
     rm "$install_path" || {
-        echo "Please removed $install_path."
+        echo "Please remove $install_path."
     }
     ;;
-*$(brew --prefix)*)
+*brew*)
     # brew
     brew uninstall gitstart || {
-        echo "Please removed $install_path."
+        echo "Please remove $install_path."
     }
     brew untap shinokada/gitstart
     ;;
 *usr/bin*)
     # debian package
-    rm "$install_path" || {
-        echo "Please removed $install_path."
+    sudo apt remove gitstart || {
+        echo "Please remove $install_path."
     }
     ;;
 *)

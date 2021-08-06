@@ -44,6 +44,13 @@ If you have Homebrew on your macOS, your can run:
 brew tap shinokada/gitstart && brew install gitstart
 ```
 
+### Debian/Ubuntu
+
+Download the latest version from [releases page](https://github.com/shinokada/gitstart/releases).
+
+
+
+
 ## Uninstallation
 
 If you install Gitstart either Awesome package manager/Homebrew/Debian package, then the following will uninstall Gistart.
