@@ -44,6 +44,12 @@ If you have Homebrew on your macOS, your can run:
 brew tap shinokada/gitstart && brew install gitstart
 ```
 
+## Uninstallation
+
+```sh
+curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh > tmp1 && bash tmp1 && rm tmp1
+```
+
 ## Usage
 
 - Login github using `gh auth login`.

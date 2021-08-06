@@ -6,14 +6,44 @@ echo "Uninstalling gitstart..."
 install_path=$(command -v gitstart)
 gitstart_config=$HOME/.gitstart_config
 
-echo "Removing gitstart_config..."
-rm "$gitstart_config" || {
-    echo "Please removed $gitstart_config."
-}
+# awesome installation path $HOME/.local/share/bin
+# brew installation path $(brew --prefix)/bin
+# Ubuntu installtion path /usr
+
+if [ -f "$gitstart_config" ]; then
+    echo "Removing gitstart_config..."
+    rm "$gitstart_config" || {
+        echo "Please removed $gitstart_config."
+    }
+fi
 
 echo "Removing gitstart script..."
-rm "$install_path" || {
-    echo "Please removed $install_path."
-}
+
+case "$install_path" in
+*local/share*)
+    # awesome
+    rm "$install_path" || {
+        echo "Please removed $install_path."
+    }
+    ;;
+*$(brew --prefix)*)
+    # brew
+    brew uninstall gitstart || {
+        echo "Please removed $install_path."
+    }
+    brew untap shinokada/gitstart
+    ;;
+*usr/bin*)
+    # debian package
+    rm "$install_path" || {
+        echo "Please removed $install_path."
+    }
+    ;;
+*)
+    # unknown
+    echo "Not able to find your installation method."
+    echo "Please uninstall gitstart script."
+    ;;
+esac
 
 echo "Uninstalltion completed."
