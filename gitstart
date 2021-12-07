@@ -177,8 +177,10 @@ cd "$dir" || exit
 
 # creating a remote github repo using gh
 printf "Creating a public remote repo %s" "$dir"
-echo ">>> Running git init."
-git init
+gh repo create "$repo" --public --clone || {
+    echo "Not able to create a remote repo."
+    exit 1
+}
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/LICENSE
@@ -226,12 +228,17 @@ Please see license.txt.\n" "${repo}" >README.md
 # git commands
 
 echo ">>> Adding README.md and .gitignore."
-git add .
+git add . || {
+    echo "Not able to add."
+    exit 1
+}
 echo ">>> Commiting with a message 'first commit'."
-git commit -m "first commit"
-
-gh repo create "$repo" --public --push || {
-    echo "Not able to create a remote repo."
+git commit -m "first commit" || {
+    echo "Not able to commit."
+    exit 1
+}
+git push origin main || {
+    echo "Not able to push to a remote repo."
     exit 1
 }
 
