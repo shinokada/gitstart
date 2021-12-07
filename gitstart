@@ -179,10 +179,6 @@ cd "$dir" || exit
 printf "Creating a public remote repo %s" "$dir"
 echo ">>> Running git init."
 git init
-gh repo create "$repo" --public || {
-    echo "Not able to create a remote repo."
-    exit 1
-}
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/LICENSE
@@ -233,10 +229,12 @@ echo ">>> Adding README.md and .gitignore."
 git add .
 echo ">>> Commiting with a message 'first commit'."
 git commit -m "first commit"
-echo ">>> Creating the main branch."
-git branch -M main
-echo ">>> Pushing local repo to the remote."
-git push -u origin main
+
+gh repo create "$repo" --public --push || {
+    echo "Not able to create a remote repo."
+    exit 1
+}
+
 echo ">>> You have created a github repo at https://github.com/${github_username}/${repo}"
 
 exit 0
