@@ -179,7 +179,7 @@ cd "$dir" || exit
 printf "Creating a public remote repo %s" "$dir"
 echo ">>> Running git init."
 git init
-gh repo create --confirm --public || {
+gh repo create --public || {
     echo "Not able to create a remote repo."
     exit 1
 }
