@@ -173,7 +173,6 @@ done
 if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
 fi
-cd "$dir" || exit
 
 # creating a remote github repo using gh
 printf "Creating a public remote repo %s" "$dir"
@@ -181,6 +180,8 @@ gh repo create "$repo" --public --clone || {
     echo "Not able to create a remote repo."
     exit 1
 }
+
+cd "$dir" || exit
 
 if [[ ${license_url} != false ]]; then
     touch "${dir}"/LICENSE
