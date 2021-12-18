@@ -23,8 +23,14 @@ The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the d
 ## Requirements
 
 - UNIX-lie (Tested on Ubuntu and MacOS.)
-- [GitHub CLI](https://cli.github.com/manual/).
+- [GitHub CLI](https://cli.github.com/manual/), >v2.3.0.
 - [jq](https://stedolan.github.io/jq/).
+
+Linux users can download gh cli from the [Releases page](https://github.com/cli/cli/releases), then run:
+
+```sh
+$ sudo apt install ./gh_x.x.x_xxxxxxx.deb
+```
 
 ## Installation
 
