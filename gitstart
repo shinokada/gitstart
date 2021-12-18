@@ -238,7 +238,11 @@ git commit -m "first commit" || {
     echo "Not able to commit."
     exit 1
 }
-git push origin main || {
+git branch -M main || {
+    echo "Not able to add the branch"
+    exit 1
+}
+git push -u origin main || {
     echo "Not able to push to a remote repo."
     exit 1
 }
