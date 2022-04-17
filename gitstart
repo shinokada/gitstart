@@ -137,11 +137,11 @@ echo ">>> Your github username is ${github_username}."
 echo ">>> Your new repo name is ${repo}."
 
 # lisence
-PS3='Your lisence: '
-lisences=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
+PS3='Your license: '
+licenses=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
 
 echo "Select a license: "
-select license in "${lisences[@]}"; do
+select license in "${licenses[@]}"; do
     case ${license} in
     "MIT: I want it simple and permissive.")
         echo "MIT"
