@@ -136,7 +136,7 @@ license_url="mit"
 echo ">>> Your github username is ${github_username}."
 echo ">>> Your new repo name is ${repo}."
 
-# lisence
+# license
 PS3='Your license: '
 licenses=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
 
