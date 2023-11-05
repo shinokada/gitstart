@@ -103,7 +103,7 @@ Select a license:
 3) GNU GPLv3: I care about sharing improvements.
 4) None
 5) Quit
-Your lisence: 2
+Your license: 2
 Apache
 Creating a public remote repo /Users/shinichiokada/Downloads/test1>>> Running git init.
 Initialized empty Git repository in /Users/shinichiokada/Downloads/test1/.git/
