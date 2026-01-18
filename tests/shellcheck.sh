@@ -63,9 +63,14 @@ else
     echo ""
     
     # Count issues by severity
-    error_count=$(echo "$shellcheck_output" | grep -c "error:" || echo "0")
-    warning_count=$(echo "$shellcheck_output" | grep -c "warning:" || echo "0")
-    note_count=$(echo "$shellcheck_output" | grep -c "note:" || echo "0")
+    error_count=$(echo "$shellcheck_output" | grep -c "error:" || true)
+    warning_count=$(echo "$shellcheck_output" | grep -c "warning:" || true)
+    note_count=$(echo "$shellcheck_output" | grep -c "note:" || true)
+    
+    # Ensure counts are numeric
+    error_count=${error_count:-0}
+    warning_count=${warning_count:-0}
+    note_count=${note_count:-0}
     
     echo "========================================"
     echo "Summary:"
@@ -74,7 +79,7 @@ else
     echo "  Notes:    $note_count"
     echo "========================================"
     
-    if [[ $error_count -gt 0 ]]; then
+    if [[ ${error_count} -gt 0 ]]; then
         echo -e "${RED}✗ Critical issues found - please fix errors${NC}"
         exit 1
     elif [[ $warning_count -gt 0 ]]; then

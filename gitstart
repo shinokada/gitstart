@@ -142,8 +142,8 @@ while (($# > 0)); do
         shift 2
         ;;
     -m | --message)
-        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
-        [[ -n "${2}" ]] || error "Commit message cannot be empty"
+        [[ $# -ge 2 ]] || error "Option ${1} requires an argument"
+        [[ -n "${2:-}" ]] || error "Commit message cannot be empty"
         commit_message="${2}"
         shift 2
         ;;
@@ -238,7 +238,8 @@ if [[ -d "${dir}" ]]; then
     [[ -d "${dir}/.git" ]] && has_git=true
 
     # Check for files (including hidden files)
-    if [[ -n "$(ls -A "${dir}" 2>/dev/null)" ]]; then
+    dir_contents="$(ls -A "${dir}" 2>/dev/null || true)"
+    if [[ -n "${dir_contents}" ]]; then
         has_files=true
     fi
 fi
@@ -341,7 +342,8 @@ else
     if [[ -d "${temp_clone}/.git" ]]; then
         mv "${temp_clone}/.git" "${dir}/"
         # Move any existing files from clone
-        if [[ -n "$(ls -A "${temp_clone}" 2>/dev/null)" ]]; then
+        temp_contents="$(ls -A "${temp_clone}" 2>/dev/null || true)"
+        if [[ -n "${temp_contents}" ]]; then
             mv "${temp_clone}"/* "${dir}/" 2>/dev/null || true
             mv "${temp_clone}"/.[!.]* "${dir}/" 2>/dev/null || true
         fi
@@ -416,7 +418,7 @@ if ! git diff --staged --quiet; then
     git commit -m "${commit_message}"
 fi
 
-current_branch="$(git branch --show-current 2>/dev/null)"
+current_branch="$(git branch --show-current 2>/dev/null || true)"
 current_branch="${current_branch:-}"
 
 if [[ "${current_branch}" != "${branch_name}" ]]; then

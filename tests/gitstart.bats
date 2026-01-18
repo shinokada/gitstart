@@ -84,7 +84,7 @@ teardown() {
 
 # Test: Home directory protection
 @test "gitstart refuses to create repo in home directory" {
-    HOME="$TEST_DIR"
+    export HOME="$TEST_DIR"
     cd "$HOME"
     run "$GITSTART_SCRIPT" -d .
     [[ "$status" -eq 1 ]]
@@ -177,8 +177,9 @@ teardown() {
 
 # Test: Current directory support
 @test "gitstart -d . uses current directory name" {
-    mkdir -p "$TEST_DIR/current-dir-test"
-    cd "$TEST_DIR/current-dir-test"
+    # Create a subdirectory that's NOT the home directory
+    mkdir -p "$TEST_DIR/subdir/current-dir-test"
+    cd "$TEST_DIR/subdir/current-dir-test"
     run "$GITSTART_SCRIPT" -d . --dry-run
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "current-dir-test" ]]

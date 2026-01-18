@@ -24,10 +24,12 @@ trap cleanup EXIT
 
 echo "Test 1: Empty commit message (should fail)"
 echo "-------------------------------------------"
-if "${GITSTART}" -d test-repo -m "" --dry-run 2>&1 | grep -q "Commit message cannot be empty"; then
+output=$("${GITSTART}" -d test-repo -m "" --dry-run 2>&1 || true)
+if grep -Fq "Commit message cannot be empty" <<<"$output"; then
     echo "✓ Empty commit message correctly rejected"
 else
     echo "✗ Empty commit message not caught"
+    echo "Output was: $output"
     exit 1
 fi
 echo ""

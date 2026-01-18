@@ -1,413 +1,313 @@
-# Test Suite for Gitstart
+# Gitstart Test Suite
 
-This directory contains automated tests for the gitstart project using **shellcheck** (static analysis) and **bats** (functional testing).
+This directory contains all testing infrastructure for the gitstart project.
 
-## Test Structure
+## Test Files
 
-```
-tests/
-├── gitstart.bats          # Unit tests (BATS framework)
-├── integration.bats       # Integration tests (requires GitHub)
-├── shellcheck.sh          # Static analysis runner
-├── run-tests.sh           # Main test runner
-└── README.md             # This file
-```
+### Static Analysis
+- **`shellcheck.sh`** - Runs ShellCheck static analysis on the gitstart script
+  - Checks for common shell scripting errors
+  - Validates best practices
+  - Reports errors, warnings, and notes
 
-## Prerequisites
+### Unit Tests (BATS)
+- **`gitstart.bats`** - Unit tests using BATS (Bash Automated Testing System)
+  - Tests individual functions and features
+  - Validates argument parsing
+  - Tests error handling
+  - Checks dry-run mode
+  
+- **`integration.bats`** - Integration tests using BATS
+  - Tests complete workflows
+  - Validates end-to-end functionality
 
-### Required
-- **shellcheck** - Shell script static analysis
-- **bats-core** - Bash Automated Testing System
+### Functional Tests
+- **`test-validation.sh`** - Tests validation logic
+  - Empty commit message handling
+  - Valid commit message acceptance
+  - Missing argument detection
+  - Special characters handling
+  - Multi-line messages
+  
+- **`test-path-handling.sh`** - Tests path resolution
+  - Relative path conversion
+  - Current directory (.) handling
+  - Absolute path preservation
+  
+- **`test-dry-run.sh`** - Tests dry-run mode
+  - Preview output validation
+  - No side effects verification
+  
+- **`test-dry-run-simple.sh`** - Quick dry-run smoke test
 
-### Installation
-
-**macOS:**
-```bash
-brew install shellcheck bats-core
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt install shellcheck bats
-```
-
-**Arch Linux:**
-```bash
-sudo pacman -S shellcheck bats
-```
-
-### Optional (for integration tests)
-- **gh** - GitHub CLI (authenticated)
-- **jq** - JSON processor
+### Utility Scripts
+- **`run-tests.sh`** - Main test runner
+  - Runs all tests in sequence
+  - Provides comprehensive test report
+  
+- **`quick-test.sh`** - Quick smoke test
+  - Fast sanity check
+  - Useful for pre-commit validation
+  
+- **`verify-changes.sh`** - Verifies code changes
+  - Checks for regressions
+  - Validates fixes
+  
+- **`fix-permissions.sh`** - Fixes file permissions
+  - Ensures scripts are executable
+  - Maintains proper file modes
 
 ## Running Tests
 
 ### Run All Tests
 ```bash
-# From project root
 ./tests/run-tests.sh
-
-# Or from tests directory
-cd tests
-./run-tests.sh
 ```
 
-### Run Specific Test Suites
+### Run Individual Test Suites
 
-**ShellCheck only:**
-```bash
-./tests/run-tests.sh --shellcheck-only
-```
-
-**Unit tests only:**
-```bash
-./tests/run-tests.sh --unit-only
-```
-
-**Integration tests only:**
-```bash
-./tests/run-tests.sh --integration-only
-```
-
-### Run Individual Tests
-
-**ShellCheck:**
+**Static Analysis:**
 ```bash
 ./tests/shellcheck.sh
 ```
 
-**BATS unit tests:**
+**Unit Tests:**
 ```bash
-bats tests/gitstart.bats
+bats ./tests/gitstart.bats
+bats ./tests/integration.bats
 ```
 
-**BATS integration tests:**
+**Functional Tests:**
 ```bash
-bats tests/integration.bats
+./tests/test-validation.sh
+./tests/test-path-handling.sh
+./tests/test-dry-run.sh
 ```
 
-**Run specific test:**
+**Quick Smoke Test:**
 ```bash
-bats tests/gitstart.bats --filter "version"
+./tests/quick-test.sh
 ```
 
-## Test Categories
+## Test Requirements
 
-### 1. Static Analysis (shellcheck.sh)
+### Dependencies
+- `bash` 4.0 or higher
+- `bats-core` - For BATS tests
+- `shellcheck` - For static analysis
+- `gh` (GitHub CLI) - For integration tests
+- `jq` - For JSON processing
 
-Checks for:
-- Syntax errors
-- Common bash pitfalls
-- Code style issues
-- Security issues
-- POSIX compliance
+### Installation
 
-**Example output:**
-```
-Running shellcheck on gitstart script...
-========================================
-
-Checking for errors and warnings...
-
-✓ No issues found!
-
-The gitstart script passes all shellcheck checks.
-```
-
-### 2. Unit Tests (gitstart.bats)
-
-Tests script functionality without external dependencies:
-- Command-line argument parsing
-- Version and help output
-- Dry-run mode
-- Configuration file handling
-- Input validation
-- Error handling
-- Option combinations
-
-**Example:**
+**macOS:**
 ```bash
-✓ gitstart script exists and is executable
-✓ gitstart -v returns version
-✓ gitstart -h shows help
-✓ gitstart without arguments shows error
-✓ gitstart --dry-run shows preview without creating
-✓ gitstart refuses to create repo in home directory
+brew install bash bats-core shellcheck gh jq
 ```
 
-### 3. Integration Tests (integration.bats)
+**Ubuntu/Debian:**
+```bash
+sudo apt install bash bats shellcheck gh jq
+```
 
-Tests real GitHub interactions (currently skipped by default):
-- Creating actual repositories
-- Pushing to GitHub
-- Repository visibility
-- File creation and push
-- Error handling with GitHub API
+**Arch Linux:**
+```bash
+sudo pacman -S bash bats shellcheck github-cli jq
+```
 
-**Note:** Integration tests require:
-- GitHub CLI authentication (`gh auth login`)
-- Network connectivity
-- Manual cleanup of test repositories
+## Test Structure
+
+### Setup and Teardown
+All tests use temporary directories for isolation:
+- `TEST_DIR` - Temporary directory for each test
+- `XDG_CONFIG_HOME` - Test config directory
+- Cleanup happens automatically after each test
+
+### Test Environment
+Tests set up a controlled environment:
+```bash
+export TEST_DIR="$(mktemp -d)"
+export XDG_CONFIG_HOME="${TEST_DIR}/.config"
+mkdir -p "${XDG_CONFIG_HOME}/gitstart"
+echo "testuser" > "${XDG_CONFIG_HOME}/gitstart/config"
+```
+
+### Cleanup
+All tests clean up after themselves:
+```bash
+cleanup() {
+    rm -rf "${TEST_DIR}"
+}
+trap cleanup EXIT
+```
 
 ## Test Coverage
 
-Current test coverage includes:
+### Argument Parsing ✓
+- All options (short and long forms)
+- Required arguments
+- Missing arguments
+- Invalid options
+- Multiple options
 
-### Command-Line Interface
-- ✅ Version flag (`-v`)
-- ✅ Help flag (`-h`)
-- ✅ Required arguments validation
-- ✅ All option flags (short and long)
-- ✅ Option combinations
-- ✅ Unknown option handling
+### Validation ✓
+- Empty commit messages
+- Missing directory
+- Home directory protection
+- Invalid paths
+- Special characters
 
-### Configuration
-- ✅ Config file creation
-- ✅ Config file reading
-- ✅ XDG directory compliance
+### Path Handling ✓
+- Relative paths
+- Absolute paths
+- Current directory (.)
+- Path normalization
 
-### Validation
-- ✅ Home directory protection
-- ✅ Dependency checks
-- ✅ Input validation
+### Dry-Run Mode ✓
+- Preview output
+- No file creation
+- No GitHub interaction
+- Configuration display
 
-### Features
-- ✅ Dry-run mode
-- ✅ Quiet mode
-- ✅ Custom branch names
-- ✅ Custom commit messages
-- ✅ Repository descriptions
-- ✅ Private repositories
-- ✅ Language selection
+### Error Handling ✓
+- Missing dependencies
+- Invalid options
+- Missing required arguments
+- Edge cases
 
-### Edge Cases
-- ✅ Special characters in names
-- ✅ Empty strings
-- ✅ Long descriptions
-- ✅ Multiple flags
+### Integration ✓
+- Complete workflows
+- Real-world scenarios
+- Multi-option combinations
 
-## Writing New Tests
+## CI/CD Integration
 
-### BATS Test Structure
+Tests are designed to run in CI/CD environments:
+- Non-interactive mode supported
+- Exit codes indicate success/failure
+- Verbose output for debugging
+- Parallel execution safe
 
+### GitHub Actions
+The tests run automatically on:
+- Pull requests
+- Push to main branch
+- Manual workflow dispatch
+
+## Adding New Tests
+
+### BATS Test Template
 ```bash
-@test "description of test" {
-    # Setup (optional)
-    local test_var="value"
+@test "description of what you're testing" {
+    # Setup
+    setup_test_environment
     
-    # Run command
-    run command_to_test arg1 arg2
+    # Execute
+    run "$GITSTART_SCRIPT" [options]
     
-    # Assertions
-    [[ "$status" -eq 0 ]]           # Exit code
-    [[ "$output" =~ "expected" ]]    # Output contains
-    [[ -f "file.txt" ]]              # File exists
-}
-```
-
-### Common BATS Assertions
-
-```bash
-# Exit codes
-[[ "$status" -eq 0 ]]      # Success
-[[ "$status" -eq 1 ]]      # Failure
-
-# Output
-[[ "$output" == "exact" ]]          # Exact match
-[[ "$output" =~ "pattern" ]]        # Regex match
-[[ -z "$output" ]]                  # Empty output
-[[ -n "$output" ]]                  # Non-empty output
-
-# Files
-[[ -f "file" ]]           # File exists
-[[ -d "dir" ]]            # Directory exists
-[[ -x "script" ]]         # Executable
-[[ ! -f "file" ]]         # File doesn't exist
-
-# Strings
-[[ "str1" == "str2" ]]    # Equal
-[[ "str1" != "str2" ]]    # Not equal
-```
-
-### Adding a New Test
-
-1. Open `tests/gitstart.bats`
-2. Add test at the end:
-
-```bash
-@test "your new test description" {
-    run "$GITSTART_SCRIPT" -d test --your-flag
+    # Assert
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "expected output" ]]
 }
 ```
 
-3. Run tests to verify:
+### Functional Test Template
 ```bash
-bats tests/gitstart.bats
-```
+#!/usr/bin/env bash
+set -euo pipefail
 
-## Continuous Integration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GITSTART="${SCRIPT_DIR}/../gitstart"
 
-### GitHub Actions Example
+# Setup
+export TEST_DIR="$(mktemp -d)"
+cleanup() { rm -rf "${TEST_DIR}"; }
+trap cleanup EXIT
 
-Create `.github/workflows/tests.yml`:
-
-```yaml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck bats
-      
-      - name: Run tests
-        run: ./tests/run-tests.sh
-```
-
-### Pre-commit Hook
-
-Add to `.git/hooks/pre-commit`:
-
-```bash
-#!/bin/bash
-echo "Running tests before commit..."
-./tests/run-tests.sh --shellcheck-only || exit 1
-```
-
-Make it executable:
-```bash
-chmod +x .git/hooks/pre-commit
-```
-
-## Troubleshooting
-
-### "bats: command not found"
-
-Install bats:
-```bash
-brew install bats-core  # macOS
-sudo apt install bats   # Ubuntu
-```
-
-### "shellcheck: command not found"
-
-Install shellcheck:
-```bash
-brew install shellcheck       # macOS
-sudo apt install shellcheck   # Ubuntu
-```
-
-### Tests fail with "GitHub not authenticated"
-
-Login to GitHub CLI:
-```bash
-gh auth login
-```
-
-### Integration tests creating repositories
-
-Integration tests are skipped by default. They would create real GitHub repositories if enabled. Always clean up after running:
-
-```bash
-# List test repos
-gh repo list | grep gitstart-test
-
-# Delete test repo
-gh repo delete username/gitstart-test-12345 --yes
-```
-
-## Test Maintenance
-
-### When Adding New Features
-
-1. Add unit tests in `gitstart.bats`
-2. Update shellcheck exclusions if needed
-3. Run full test suite
-4. Update this README
-
-### When Fixing Bugs
-
-1. Write a test that reproduces the bug
-2. Fix the bug
-3. Verify test passes
-4. Ensure all other tests still pass
-
-### Regular Maintenance
-
-```bash
-# Run tests regularly
-./tests/run-tests.sh
-
-# Check coverage
-# Count tests
-grep -c "^@test" tests/gitstart.bats
-
-# Review shellcheck warnings
-./tests/shellcheck.sh
+# Test
+echo "Test: Description"
+output=$("${GITSTART}" [options] 2>&1 || true)
+if [[ "$output" =~ "expected" ]]; then
+    echo "✓ Test passed"
+else
+    echo "✗ Test failed"
+    exit 1
+fi
 ```
 
 ## Best Practices
 
-1. **Run tests before committing**
-   ```bash
-   ./tests/run-tests.sh
-   ```
+1. **Isolation**: Each test should be independent
+2. **Cleanup**: Always clean up test artifacts
+3. **Deterministic**: Tests should produce consistent results
+4. **Fast**: Keep tests quick for rapid feedback
+5. **Clear**: Use descriptive test names and messages
+6. **Comprehensive**: Cover happy paths and edge cases
 
-2. **Write tests for new features**
-   - Add test case before implementing feature (TDD)
-   - Verify test fails initially
-   - Implement feature
-   - Verify test passes
+## Debugging Tests
 
-3. **Keep tests fast**
-   - Unit tests should run in seconds
-   - Use mocks for external dependencies
-   - Separate integration tests
+### Verbose Mode
+Most test scripts support verbose output:
+```bash
+set -x  # Enable bash debug mode
+./tests/test-validation.sh
+```
 
-4. **Make tests readable**
-   - Use descriptive test names
-   - One assertion per concept
-   - Clear setup and teardown
+### Individual Test Execution
+Run specific BATS tests:
+```bash
+bats -f "test name pattern" ./tests/gitstart.bats
+```
 
-5. **Test edge cases**
-   - Empty strings
-   - Special characters
-   - Boundary conditions
-   - Error conditions
+### Manual Testing
+You can also test manually:
+```bash
+./gitstart -d test-repo --dry-run
+```
 
-## Future Improvements
+## Troubleshooting
 
-- [ ] Increase test coverage to >90%
-- [ ] Add mocking for external commands (gh, git)
-- [ ] Create safe integration test environment
-- [ ] Add performance benchmarks
-- [ ] Generate coverage reports
-- [ ] Add mutation testing
-- [ ] Test on multiple OS versions
+### Common Issues
 
-## Resources
+**BATS not found:**
+```bash
+# Install BATS
+brew install bats-core  # macOS
+sudo apt install bats   # Ubuntu
+```
+
+**Permission denied:**
+```bash
+# Fix permissions
+./tests/fix-permissions.sh
+```
+
+**Test failures:**
+1. Check dependencies are installed
+2. Ensure gitstart script is executable
+3. Review test output for details
+4. Run tests individually to isolate issues
+
+## Contributing
+
+When adding new features:
+1. Write tests first (TDD approach)
+2. Run all tests before committing
+3. Update test documentation
+4. Add new test files to this README
+
+## Recent Changes
+
+### 2026-01-18: Major Cleanup
+- Moved all test files to `tests/` directory
+- Fixed empty commit message validation
+- Fixed ShellCheck arithmetic errors
+- Fixed BATS HOME directory test
+- Fixed pipeline handling in test scripts
+- Consolidated test infrastructure
+
+## References
 
 - [BATS Documentation](https://bats-core.readthedocs.io/)
-- [ShellCheck Wiki](https://github.com/koalaman/shellcheck/wiki)
-- [Bash Testing Best Practices](https://github.com/sstephenson/bats/wiki/Best-practices)
-
-## Support
-
-For issues with tests:
-1. Ensure dependencies are installed
-2. Check test output for specific failures
-3. Review test code for understanding
-4. Open an issue with test output
-
----
-
-**Happy Testing! 🧪**
+- [ShellCheck Wiki](https://www.shellcheck.net/)
+- [Bash Testing Best Practices](https://github.com/bats-core/bats-core#writing-tests)
