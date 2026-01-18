@@ -177,7 +177,10 @@ done
 command -v gh >/dev/null || error "Please install gh"
 command -v jq >/dev/null || error "Please install jq"
 
-gh auth status &>/dev/null || error "Run 'gh auth login' first"
+# Skip auth check in dry-run mode (allows testing without GitHub auth)
+if [[ "${dry_run}" == false ]]; then
+    gh auth status &>/dev/null || error "Run 'gh auth login' first"
+fi
 
 [[ -n "${dir}" ]] || error "Directory is required (-d)"
 
@@ -197,7 +200,8 @@ get_github_username() {
 
     if [[ -s "${gitstart_config}" ]]; then
         github_username="$(cat "${gitstart_config}")"
-        if [[ "${quiet}" == false && "${dry_run}" == false ]]; then
+        # Only prompt for confirmation if not in dry-run or quiet mode AND in interactive terminal
+        if [[ "${quiet}" == false && "${dry_run}" == false && -t 0 ]]; then
             read -r -p "GitHub username (${github_username}) OK? (y/n): " answer
             [[ "${answer}" =~ ^[Yy]$ ]] || {
                 read -r -p "Enter GitHub username: " github_username
@@ -205,11 +209,11 @@ get_github_username() {
             }
         fi
     else
-        if [[ "${dry_run}" == false ]]; then
+        if [[ "${dry_run}" == false && -t 0 ]]; then
             read -r -p "Enter GitHub username: " github_username
             echo "${github_username}" >"${gitstart_config}"
         else
-            # For dry-run, use a placeholder if no config exists
+            # For dry-run or non-interactive, use a placeholder if no config exists
             github_username="<username>"
         fi
     fi
@@ -241,7 +245,8 @@ fi
 # --------------------
 license_url="mit"
 
-if [[ "${dry_run}" == false && "${quiet}" == false ]]; then
+# Only prompt for license if not in dry-run or quiet mode AND in interactive terminal
+if [[ "${dry_run}" == false && "${quiet}" == false && -t 0 ]]; then
     PS3="Select a license: "
     select license in \
         "MIT" "Apache-2.0" "GPLv3" "None" "Quit"; do

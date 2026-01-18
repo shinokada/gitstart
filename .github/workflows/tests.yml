@@ -51,7 +51,7 @@ jobs:
           echo "================================"
           echo "Test run completed"
           echo "================================"
-          if [ ${{ job.status }} == 'success' ]; then
+          if [[ "${{ job.status }}" == 'success' ]]; then
             echo "✓ All tests passed!"
           else
             echo "✗ Some tests failed"

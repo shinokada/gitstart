@@ -223,11 +223,7 @@ print_summary() {
     echo "Tests run:    $total"
     if [[ "$CI_ENV" == "true" ]]; then
         echo "Passed:       $total_passed"
-        if [[ $total_failed -gt 0 ]]; then
-            echo "Failed:       $total_failed"
-        else
-            echo "Failed:       $total_failed"
-        fi
+        echo "Failed:       $total_failed"
     else
         echo -e "Passed:       ${GREEN}$total_passed${NC}"
         if [[ $total_failed -gt 0 ]]; then
