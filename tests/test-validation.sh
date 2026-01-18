@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITSTART="${SCRIPT_DIR}/gitstart"
+GITSTART="${SCRIPT_DIR}/../gitstart"
 
 echo "Testing Validation Improvements"
 echo "==============================="
@@ -46,10 +46,12 @@ echo ""
 
 echo "Test 3: Missing commit message argument (should fail)"
 echo "-----------------------------------------------------"
-if "${GITSTART}" -d test-repo -m 2>&1 | grep -q "requires an argument"; then
+output=$("${GITSTART}" -d test-repo -m 2>&1 || true)
+if grep -Fq "requires an argument" <<<"$output"; then
     echo "✓ Missing argument correctly detected"
 else
     echo "✗ Missing argument not caught"
+    echo "Output was: $output"
     exit 1
 fi
 echo ""

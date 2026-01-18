@@ -12,8 +12,8 @@ echo "================================"
 echo ""
 
 # Fix main script
-if [[ -f "$SCRIPT_DIR/gitstart" ]]; then
-    chmod +x "$SCRIPT_DIR/gitstart"
+if [[ -f "$SCRIPT_DIR/../gitstart" ]]; then
+    chmod +x "$SCRIPT_DIR/../gitstart"
     echo "✓ Fixed: gitstart"
 else
     echo "✗ Not found: gitstart"
@@ -21,15 +21,21 @@ fi
 
 # Fix test scripts
 for script in \
-    "tests/run-tests.sh" \
-    "tests/shellcheck.sh" \
-    "tests/test-dry-run.sh"
+    "run-tests.sh" \
+    "shellcheck.sh" \
+    "test-dry-run.sh" \
+    "test-dry-run-simple.sh" \
+    "test-validation.sh" \
+    "test-path-handling.sh" \
+    "quick-test.sh" \
+    "verify-changes.sh" \
+    "fix-permissions.sh"
 do
     if [[ -f "$SCRIPT_DIR/$script" ]]; then
         chmod +x "$SCRIPT_DIR/$script"
-        echo "✓ Fixed: $script"
+        echo "✓ Fixed: tests/$script"
     else
-        echo "⚠ Not found: $script"
+        echo "⚠ Not found: tests/$script"
     fi
 done
 

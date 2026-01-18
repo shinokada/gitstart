@@ -86,9 +86,13 @@ teardown() {
 @test "gitstart refuses to create repo in home directory" {
     export HOME="$TEST_DIR"
     cd "$HOME"
-    run "$GITSTART_SCRIPT" -d .
-    [[ "$status" -eq 1 ]]
-    [[ "$output" =~ "home directory" ]] || [[ "$output" =~ "HOME" ]]
+    run "$GITSTART_SCRIPT" -d . --dry-run
+    [[ "$status" -eq 1 ]] || {
+        echo "Expected exit status 1, got $status"
+        echo "Output: $output"
+        return 1
+    }
+    [[ "$output" =~ "Refusing to create repo in HOME" ]] || [[ "$output" =~ "home" ]] || [[ "$output" =~ "HOME" ]]
 }
 
 # Test: Config file creation

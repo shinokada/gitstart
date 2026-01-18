@@ -4,7 +4,7 @@
 
 ### Run All Tests
 ```bash
-cd /Users/shinichiokada/Bash/gitstart
+cd "$(git rev-parse --show-toplevel)"  # Or cd /path/to/gitstart
 ./tests/run-tests.sh
 ```
 

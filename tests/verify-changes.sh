@@ -5,9 +5,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITSTART="${SCRIPT_DIR}/gitstart"
-WORKFLOW="${SCRIPT_DIR}/.github/workflows/tests.yml"
-RUN_TESTS="${SCRIPT_DIR}/tests/run-tests.sh"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+GITSTART="${REPO_ROOT}/gitstart"
+WORKFLOW="${REPO_ROOT}/.github/workflows/tests.yml"
+RUN_TESTS="${REPO_ROOT}/tests/run-tests.sh"
 
 echo "=========================================="
 echo "Change Verification Summary"
@@ -40,7 +41,7 @@ echo "Verification Complete"
 echo "=========================================="
 echo ""
 echo "Next steps:"
-echo "1. Run local test: ./test-dry-run-simple.sh"
+echo "1. Run local test: ./tests/test-dry-run-simple.sh"
 echo "2. Commit changes: git add -A && git commit -m 'Fix: CI test improvements'"
 echo "3. Push: git push"
 echo "4. Watch CI pass all 35 tests ✓"

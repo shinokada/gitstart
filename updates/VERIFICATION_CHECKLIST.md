@@ -29,7 +29,7 @@ Run each command and check the box when it passes:
 
 ### Step 1: Verify File Locations
 ```bash
-cd /Users/shinichiokada/Bash/gitstart
+cd "$(git rev-parse --show-toplevel)"  # Or cd /path/to/gitstart
 ls tests/test-validation.sh tests/test-path-handling.sh tests/quick-test.sh
 ```
 - [ ] All files exist in `tests/` directory

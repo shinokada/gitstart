@@ -5,7 +5,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITSTART="${SCRIPT_DIR}/gitstart"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+GITSTART="${REPO_ROOT}/gitstart"
 
 echo "Testing Absolute Path Handling"
 echo "==============================="

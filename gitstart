@@ -212,12 +212,15 @@ get_github_username() {
             }
         fi
     else
-        if [[ "${dry_run}" == false && -t 0 ]]; then
+        if [[ "${dry_run}" == false && "${quiet}" == false && -t 0 ]]; then
             read -r -p "Enter GitHub username: " github_username
             echo "${github_username}" >"${gitstart_config}"
-        else
+        elif [[ "${dry_run}" == true ]]; then
             # For dry-run or non-interactive, use a placeholder if no config exists
             github_username="<username>"
+        else
+            # Non-interactive and not dry-run: error out
+            error "GitHub username not configured. Run once interactively or set ${gitstart_config}"
         fi
     fi
 }
