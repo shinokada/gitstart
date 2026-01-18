@@ -260,7 +260,8 @@ teardown() {
 # Test: Empty string handling
 @test "gitstart handles empty commit message" {
     run "$GITSTART_SCRIPT" -d test -m "" --dry-run
-    [[ "$status" -eq 0 ]]
+    [[ "$status" -eq 1 ]]
+    [[ "$output" =~ "Commit message cannot be empty" ]] || [[ "$output" =~ "empty" ]]
 }
 
 # Test: Long description handling

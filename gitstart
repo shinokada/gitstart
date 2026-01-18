@@ -143,6 +143,7 @@ while (($# > 0)); do
         ;;
     -m | --message)
         [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
+        [[ -n "${2}" ]] || error "Commit message cannot be empty"
         commit_message="${2}"
         shift 2
         ;;
@@ -186,6 +187,8 @@ fi
 
 if [[ "${dir}" == "." ]]; then
     dir="$(pwd)"
+elif [[ "${dir}" == /* ]]; then
+    : # Already absolute, keep as-is
 else
     dir="$(pwd)/${dir}"
 fi

@@ -21,8 +21,8 @@ echo ""
 
 echo "2. gitstart - Terminal checks (lines 199, 214, 244)"
 echo "   Checking for '-t 0' additions..."
-grep -c "\-t 0" "${GITSTART}" || echo "0"
-echo "   Found $(grep -c '\-t 0' "${GITSTART}") instances (expected: 3)"
+count=$(grep -c '\-t 0' "${GITSTART}" || echo "0")
+echo "   Found ${count} instances (expected: 3)"
 echo ""
 
 echo "3. .github/workflows/tests.yml - Shell syntax"
