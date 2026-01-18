@@ -287,8 +287,8 @@ main() {
     # Run tests
     local failed=0
     
-    run_shellcheck || ((failed++))
-    run_unit_tests || ((failed++))
+    run_shellcheck || failed=$((failed + 1))
+    run_unit_tests || failed=$((failed + 1))
     run_integration_tests || true  # Don't count integration tests in failure
     
     # Print summary

@@ -10,6 +10,33 @@
 set -euo pipefail
 
 # --------------------
+# Bash version check
+# --------------------
+check_bash_version() {
+    local required_version=4
+    local current_version="${BASH_VERSINFO[0]}"
+    
+    if (( current_version < required_version )); then
+        cat <<EOF
+ERROR: This script requires Bash ${required_version}.0 or higher.
+Current version: ${BASH_VERSION}
+
+On macOS, install a newer version:
+  brew install bash
+  
+Then run with:
+  /usr/local/bin/bash $0 [OPTIONS]
+
+Or add to your PATH:
+  export PATH="/usr/local/bin:\$PATH"
+EOF
+        exit 1
+    fi
+}
+
+check_bash_version
+
+# --------------------
 # Variables
 # --------------------
 unset github_username dir repo license_url
@@ -53,6 +80,13 @@ Description:
 Automates creating a git repository.
 Creates a directory, adds LICENSE/README, initializes git, and pushes to GitHub.
 
+Requirements:
+=============
+- Bash 4.0 or higher
+- gh (GitHub CLI)
+- jq (JSON processor)
+- git
+
 Usage:
 ======
 ${script_name} [OPTIONS]
@@ -89,10 +123,12 @@ error() {
 while (($# > 0)); do
     case "${1}" in
     -d | --dir)
+        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
         dir="${2}"
         shift 2
         ;;
     -l | --lang)
+        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
         prog_lang="${2}"
         shift 2
         ;;
@@ -101,14 +137,17 @@ while (($# > 0)); do
         shift
         ;;
     -b | --branch)
+        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
         branch_name="${2}"
         shift 2
         ;;
     -m | --message)
+        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
         commit_message="${2}"
         shift 2
         ;;
     -desc | --description)
+        [[ -n "${2:-}" ]] || error "Option ${1} requires an argument"
         repo_description="${2}"
         shift 2
         ;;
@@ -191,7 +230,8 @@ if [[ -d "${dir}" ]]; then
     dir_exists=true
     [[ -d "${dir}/.git" ]] && has_git=true
 
-    if compgen -A file "${dir}"/* "${dir}"/.* >/dev/null; then
+    # Check for files (including hidden files)
+    if [[ -n "$(ls -A "${dir}" 2>/dev/null)" ]]; then
         has_files=true
     fi
 fi
@@ -268,17 +308,40 @@ fi
 # --------------------
 # Repo creation
 # --------------------
-mkdir -p "${dir}"
-cd "${dir}"
-
 gh_args=("${repo}" "--${visibility}")
 [[ -n "${repo_description}" ]] && gh_args+=("--description" "${repo_description}")
 
 if [[ "${has_git}" == true ]]; then
+    # Directory already has git, create repo and link it
+    cd "${dir}"
     gh repo create "${gh_args[@]}" --source=. --remote=origin || true
 else
-    gh repo create "${gh_args[@]}" --clone
-    cd "${repo}"
+    # Create new repo and clone into the target directory
+    # Create remote repo first (without cloning)
+    gh repo create "${gh_args[@]}"
+    
+    # Clone into parent directory, then move contents
+    parent_dir="$(dirname "${dir}")"
+    cd "${parent_dir}"
+    
+    # Clone to a temporary location
+    temp_clone="${repo}_temp_$$"
+    git clone "https://github.com/${github_username}/${repo}.git" "${temp_clone}"
+    
+    # Create target directory and move clone contents
+    mkdir -p "${dir}"
+    if [[ -d "${temp_clone}/.git" ]]; then
+        mv "${temp_clone}/.git" "${dir}/"
+        # Move any existing files from clone
+        if [[ -n "$(ls -A "${temp_clone}" 2>/dev/null)" ]]; then
+            mv "${temp_clone}"/* "${dir}/" 2>/dev/null || true
+            mv "${temp_clone}"/.[!.]* "${dir}/" 2>/dev/null || true
+        fi
+    fi
+    rm -rf "${temp_clone}"
+    
+    # Change to target directory
+    cd "${dir}"
 fi
 
 REPO_CREATED=true
@@ -305,7 +368,9 @@ EOF
 
 if [[ ! -f .gitignore ]]; then
     if [[ -n "${prog_lang}" ]]; then
-        url="https://raw.githubusercontent.com/github/gitignore/master/${prog_lang^}.gitignore"
+        # Capitalize first letter for GitHub gitignore URL (Bash 4.0+ required)
+        lang_capitalized="${prog_lang^}"
+        url="https://raw.githubusercontent.com/github/gitignore/master/${lang_capitalized}.gitignore"
         if curl -sf "${url}" -o .gitignore; then
             : # ok
         else
