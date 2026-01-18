@@ -13,6 +13,12 @@ export XDG_CONFIG_HOME="${TEST_DIR}/.config"
 mkdir -p "${XDG_CONFIG_HOME}/gitstart"
 echo "testuser" > "${XDG_CONFIG_HOME}/gitstart/config"
 
+# Ensure cleanup on exit
+cleanup() {
+    rm -rf "${TEST_DIR}"
+}
+trap cleanup EXIT
+
 echo "Testing dry-run mode..."
 echo "======================="
 
@@ -46,9 +52,6 @@ else
     echo "✗ Test 3 failed"
     exit 1
 fi
-
-# Cleanup
-rm -rf "${TEST_DIR}"
 
 echo ""
 echo "======================="

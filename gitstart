@@ -260,7 +260,7 @@ if [[ "${dry_run}" == false && "${quiet}" == false && -t 0 ]]; then
             break
             ;;
         GPLv3)
-            license_url="lgpl-3.0"
+            license_url="gpl-3.0"
             break
             ;;
         None)
@@ -355,8 +355,12 @@ REPO_CREATED=true
 # LICENSE
 # --------------------
 if [[ "${license_url}" != "none" && ! -f LICENSE ]]; then
-    curl -s "https://api.github.com/licenses/${license_url}" |
-        jq -r '.body' >LICENSE
+    license_body="$(curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body // empty')"
+    if [[ -n "${license_body}" ]]; then
+        echo "${license_body}" > LICENSE
+    else
+        log "Warning: Could not fetch license text for ${license_url}"
+    fi
 fi
 
 # --------------------

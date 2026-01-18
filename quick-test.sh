@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Run a quick local test
-chmod +x test-dry-run-simple.sh
-./test-dry-run-simple.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEST_SCRIPT="${SCRIPT_DIR}/test-dry-run-simple.sh"
+chmod +x "${TEST_SCRIPT}"
+"${TEST_SCRIPT}"
