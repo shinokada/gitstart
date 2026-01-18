@@ -1,252 +1,353 @@
 #!/usr/bin/env bash
+# shellcheck shell=bash
 
 ########################
 # Author: Shinichi Okada
 # Date: 2021-12-18
-###########################
+# Updated: 2026-01-18
+########################
 
+set -euo pipefail
+
+# --------------------
+# Variables
+# --------------------
 unset github_username dir repo license_url
-
-script_name=$(basename "$0")
+script_name="$(basename "${0}")"
 dir=""
-version="0.3.0"
-gitstart_cofig=$HOME/.gitstart_config
+version="0.4.0"
 
+config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/gitstart"
+gitstart_config="${config_dir}/config"
+
+visibility="public"
+branch_name="main"
+commit_message="Initial commit"
+dry_run=false
+quiet=false
+prog_lang=""
+repo_description=""
+
+# --------------------
+# Cleanup on error
+# --------------------
+# shellcheck disable=SC2329
+cleanup_on_error() {
+    if [[ -n "${REPO_CREATED:-}" && -n "${repo:-}" && -n "${github_username:-}" ]]; then
+        echo ">>> Error occurred. Cleaning up remote repository..."
+        gh repo delete "${github_username}/${repo}" --yes 2>/dev/null || true
+    fi
+}
+
+trap cleanup_on_error ERR
+
+# --------------------
+# Helpers
+# --------------------
 usage() {
     cat <<EOF
-
-Script name: $script_name
+Script name: ${script_name}
 
 Description:
 ============
-
-This script automate creating git repo.
-This will create a dir, add a license, README file, run git init and push to Github. 
-
-If a language is added, it will try to add the .gitignore.
-Choose SSH as the default git protocol.
-
-List of .gitignore supported by Github
-======================================
-
-See https://github.com/github/gitignore
+Automates creating a git repository.
+Creates a directory, adds LICENSE/README, initializes git, and pushes to GitHub.
 
 Usage:
 ======
+${script_name} [OPTIONS]
 
-$script_name [ -l | --lang programming_language ] [ -d | --dir directory ] [ -h | --help | -v | --version]
-
-Examples:
-=========
-
-    $script_name -d newrepo
-    $script_name -d newrepo -l python 
-    # in a directory
-    $script_name -d .
-    # Show help
-    $script_name -h
-    # Show version
-    $script_name -v
+Options:
+========
+  -d, --dir DIRECTORY          Directory name or path (use . for current directory)
+  -l, --lang LANGUAGE          Programming language for .gitignore
+  -p, --private                Create a private repository
+  -b, --branch BRANCH          Branch name (default: main)
+  -m, --message MESSAGE        Initial commit message
+  -desc, --description DESC    Repository description
+  --dry-run                    Preview without executing
+  -q, --quiet                  Minimal output
+  -h, --help                   Show help
+  -v, --version                Show version
 EOF
 }
 
-while (($# > 0)); do # while arguments count>0
-    case "$1" in
+log() {
+    if [[ "${quiet}" == false ]]; then
+        echo ">>> ${1}"
+    fi
+}
+
+error() {
+    echo "ERROR: ${1}" >&2
+    exit 1
+}
+
+# --------------------
+# Argument parsing
+# --------------------
+while (($# > 0)); do
+    case "${1}" in
+    -d | --dir)
+        dir="${2}"
+        shift 2
+        ;;
     -l | --lang)
-        prog_lang=$2
+        prog_lang="${2}"
+        shift 2
+        ;;
+    -p | --private)
+        visibility="private"
         shift
         ;;
-    -d | --dir)
-        dir=$2
+    -b | --branch)
+        branch_name="${2}"
         shift 2
+        ;;
+    -m | --message)
+        commit_message="${2}"
+        shift 2
+        ;;
+    -desc | --description)
+        repo_description="${2}"
+        shift 2
+        ;;
+    --dry-run)
+        dry_run=true
+        shift
+        ;;
+    -q | --quiet)
+        quiet=true
+        shift
         ;;
     -h | --help)
         usage
-        exit
+        exit 0
         ;;
     -v | --version)
-        echo ${version}
-        exit
+        echo "${version}"
+        exit 0
         ;;
-    *) # unknown flag/switch
-        POSITIONAL+=("$1")
-        shift
-        ;;
+    *) error "Unknown option: ${1}" ;;
     esac
 done
 
-##### check
-if [ ! "$(command -v gh)" ]; then
-    echo "Please install gh from https://github.com/cli/cli#installation."
-    exit 1
-fi
+# --------------------
+# Preconditions
+# --------------------
+command -v gh >/dev/null || error "Please install gh"
+command -v jq >/dev/null || error "Please install jq"
 
-if [ ! "$(command -v jq)" ]; then
-    echo "Please install jq from https://stedolan.github.io/jq/."
-    exit 1
-fi
+gh auth status &>/dev/null || error "Run 'gh auth login' first"
 
-############# Main body ############
-# check if you are logged in github
-if [[ $(gh auth status) -eq 1 ]]; then
-    # not logged-in
-    echo ">>> You must logged in. Use 'gh auth login'"
-    exit 1
-fi
+[[ -n "${dir}" ]] || error "Directory is required (-d)"
 
-# Directory path. If dir is . then use pwd
-if [[ ${dir} = "." ]]; then
-    dir=$(pwd)
+if [[ "${dir}" == "." ]]; then
+    dir="$(pwd)"
 else
-    echo ">>> Creating ${dir}."
-    dir="$(pwd)/$dir"
-    # mkdir -p "$dir" || exit
-    # cd "$dir" || exit
+    dir="$(pwd)/${dir}"
 fi
 
-# don't allow to create a git repo in the ~ (HOME)
-if [[ (${dir} = "$HOME") ]]; then
-    echo "This script doesn't allow to create a git repo in the home directory."
-    echo "Use another directory."
-    exit 1
-fi
+[[ "${dir}" != "${HOME}" ]] || error "Refusing to create repo in HOME"
 
-gitname() {
-    printf "Please type your Github username. "
-    read -r github_username
-    echo "$github_username" >"$gitstart_cofig"
+# --------------------
+# GitHub username
+# --------------------
+get_github_username() {
+    mkdir -p "${config_dir}"
+
+    if [[ -s "${gitstart_config}" ]]; then
+        github_username="$(cat "${gitstart_config}")"
+        if [[ "${quiet}" == false && "${dry_run}" == false ]]; then
+            read -r -p "GitHub username (${github_username}) OK? (y/n): " answer
+            [[ "${answer}" =~ ^[Yy]$ ]] || {
+                read -r -p "Enter GitHub username: " github_username
+                echo "${github_username}" >"${gitstart_config}"
+            }
+        fi
+    else
+        if [[ "${dry_run}" == false ]]; then
+            read -r -p "Enter GitHub username: " github_username
+            echo "${github_username}" >"${gitstart_config}"
+        else
+            # For dry-run, use a placeholder if no config exists
+            github_username="<username>"
+        fi
+    fi
 }
 
-if [ ! -s "$gitstart_cofig" ]; then
-    gitname
-else
-    github_username=$(cat "$gitstart_cofig")
-    echo "Is it correct your GitHub username is $github_username. y/yes/n/no"
-    read -r ANS
-    ans=$(echo "$ANS" | cut -c 1-1 | tr "[:lower:]" "[:upper:]")
-    if [[ $ans = "Y" ]]; then
-        :
-    else
-        gitname
+get_github_username
+
+repo="$(basename "${dir}")"
+
+# --------------------
+# Directory state
+# --------------------
+dir_exists=false
+has_git=false
+has_files=false
+
+if [[ -d "${dir}" ]]; then
+    dir_exists=true
+    [[ -d "${dir}/.git" ]] && has_git=true
+
+    if compgen -A file "${dir}"/* "${dir}"/.* >/dev/null; then
+        has_files=true
     fi
 fi
 
-repo=$(basename "${dir}")
+# --------------------
+# License selection
+# --------------------
 license_url="mit"
-echo ">>> Your github username is ${github_username}."
-echo ">>> Your new repo name is ${repo}."
 
-# license
-PS3='Your license: '
-licenses=("MIT: I want it simple and permissive." "Apache License 2.0: I need to work in a community." "GNU GPLv3: I care about sharing improvements." "None" "Quit")
-
-echo "Select a license: "
-select license in "${licenses[@]}"; do
-    case ${license} in
-    "MIT: I want it simple and permissive.")
-        echo "MIT"
-        break
-        ;;
-    "Apache License 2.0: I need to work in a community.")
-        echo "Apache"
-        license_url="apache-2.0"
-        break
-        ;;
-    "GNU GPLv3: I care about sharing improvements.")
-        echo "GNU"
-        license_url="lgpl-3.0"
-        break
-        ;;
-    "None")
-        echo "License None"
-        license_url=false
-        break
-        ;;
-    "Quit")
-        echo "User requested exit."
-        exit
-        ;;
-    *) echo "Invalid option $REPLY" ;;
-    esac
-done
-
-if [ ! -d "$dir" ]; then
-    mkdir -p "$dir"
+if [[ "${dry_run}" == false && "${quiet}" == false ]]; then
+    PS3="Select a license: "
+    select license in \
+        "MIT" "Apache-2.0" "GPLv3" "None" "Quit"; do
+        case "${license}" in
+        MIT)
+            license_url="mit"
+            break
+            ;;
+        Apache-2.0)
+            license_url="apache-2.0"
+            break
+            ;;
+        GPLv3)
+            license_url="lgpl-3.0"
+            break
+            ;;
+        None)
+            license_url="none"
+            break
+            ;;
+        Quit)
+            exit 0
+            ;;
+        *)
+            echo "Invalid selection. Please try again."
+            ;;
+        esac
+    done
 fi
 
-# creating a remote github repo using gh
-printf "Creating a public remote repo %s" "$dir"
-gh repo create "$repo" --public --clone || {
-    echo "Not able to create a remote repo."
-    exit 1
-}
+# --------------------
+# Dry run
+# --------------------
+if [[ "${dry_run}" == true ]]; then
+    cat <<EOF
+=== DRY RUN MODE ===
+No changes will be made to your system or GitHub.
 
-cd "$dir" || exit
+Configuration:
+--------------
+GitHub User:     ${github_username}
+Repository:      ${repo}
+Directory:       ${dir}
+Visibility:      ${visibility}
+Branch:          ${branch_name}
+Commit Message:  ${commit_message}
+Language:        ${prog_lang:-none}
+License:         ${license_url}
+Description:     ${repo_description:-none}
 
-if [[ ${license_url} != false ]]; then
-    touch "${dir}"/LICENSE
-    curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body' >"${dir}"/LICENSE
-    echo ">>> LICENSE is created."
+What would happen:
+------------------
+1. Create directory: ${dir}
+2. Initialize git repository
+3. Create .gitignore (${prog_lang:-minimal})
+4. Create LICENSE (${license_url})
+5. Create README.md
+6. Create GitHub repository (${visibility})
+7. Push to branch: ${branch_name}
+EOF
+    exit 0
 fi
 
-if [[ ${prog_lang} ]]; then
-    # github gitignore url
-    url=https://raw.githubusercontent.com/github/gitignore/master/"${prog_lang^}".gitignore
-    # get the status http code, 200, 404 etc.
-    http_status=$(curl --write-out '%{http_code}' --silent --output /dev/null "${url}")
+# --------------------
+# Repo creation
+# --------------------
+mkdir -p "${dir}"
+cd "${dir}"
 
-    if [[ $http_status -eq 200 ]]; then
-        # get argument e.g python, go etc, capitalize it
-        echo ">>> Creating .gitignore for ${1^}..."
-        # create .gitignore
-        curl "${url}" -o .gitignore
-        echo ">>> .gitignore created."
-    else
-        echo ">>> Not able to find ${1^} gitignore at https://github.com/github/gitignore."
-        echo ">>> Adding .gitignore with minimum contents."
-        touch "${dir}/.gitignore"
-        echo ".DS_Store" >"${dir}/.gitignore"
-    fi
+gh_args=("${repo}" "--${visibility}")
+[[ -n "${repo_description}" ]] && gh_args+=("--description" "${repo_description}")
+
+if [[ "${has_git}" == true ]]; then
+    gh repo create "${gh_args[@]}" --source=. --remote=origin || true
 else
-    echo ">>> Adding .gitignore with minimum contents."
-    touch "${dir}/.gitignore"
-    echo ".DS_Store" >"${dir}/.gitignore"
+    gh repo create "${gh_args[@]}" --clone
+    cd "${repo}"
 fi
 
+REPO_CREATED=true
+
+# --------------------
+# LICENSE
+# --------------------
+if [[ "${license_url}" != "none" && ! -f LICENSE ]]; then
+    curl -s "https://api.github.com/licenses/${license_url}" |
+        jq -r '.body' >LICENSE
+fi
+
+# --------------------
+# .gitignore
+# --------------------
+create_minimal_gitignore() {
+    cat <<'EOF'
+.DS_Store
+.idea/
+.vscode/
+*.swp
+EOF
+}
+
+if [[ ! -f .gitignore ]]; then
+    if [[ -n "${prog_lang}" ]]; then
+        url="https://raw.githubusercontent.com/github/gitignore/master/${prog_lang^}.gitignore"
+        if curl -sf "${url}" -o .gitignore; then
+            : # ok
+        else
+            create_minimal_gitignore >.gitignore
+        fi
+    else
+        create_minimal_gitignore >.gitignore
+    fi
+fi
+
+# --------------------
 # README
-echo ">>> Creating README.md."
-printf "# %s \n
-## Overview\n\n
-## Requirement\n\n
-## Usage\n\n
-## Features\n\n
-## Reference\n\n
-## Author\n\n
+# --------------------
+if [[ ! -f README.md ]]; then
+    cat >README.md <<EOF
+# ${repo}
+
+${repo_description:-Project description.}
+
 ## License
+${license_url}
+EOF
+fi
 
-Please see license.txt.\n" "${repo}" >README.md
+# --------------------
+# Git
+# --------------------
+git add .
 
-# git commands
+if ! git diff --staged --quiet; then
+    git commit -m "${commit_message}"
+fi
 
-echo ">>> Adding README.md and .gitignore."
-git add . || {
-    echo "Not able to add."
-    exit 1
-}
-echo ">>> Commiting with a message 'first commit'."
-git commit -m "first commit" || {
-    echo "Not able to commit."
-    exit 1
-}
-git branch -M main || {
-    echo "Not able to add the branch"
-    exit 1
-}
-git push -u origin main || {
-    echo "Not able to push to a remote repo."
-    exit 1
-}
+current_branch="$(git branch --show-current 2>/dev/null)"
+current_branch="${current_branch:-}"
 
-echo ">>> You have created a github repo at https://github.com/${github_username}/${repo}"
+if [[ "${current_branch}" != "${branch_name}" ]]; then
+    git branch -M "${branch_name}"
+fi
 
-exit 0
+git push -u origin "${branch_name}"
+
+echo "✓ Repository created: https://github.com/${github_username}/${repo}"
+
+unset REPO_CREATED

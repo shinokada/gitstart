@@ -14,24 +14,26 @@
 
 > Gitstart creates, adds, and pushes with one line.
 
-This script automates creating a git repo. The script will:
+This script automates creating a git repository. The script will:
 
-- Create .gitignore if you provide a language.
-- Create a license.txt depends on your choice.
-- Create a new repo at GitHub.com.
-- Create a README.md file with the repo name.
-- Add README.md and commit with a message.
-- Add the remote and push the file.
+- Create .gitignore if you provide a language
+- Create a license file based on your choice
+- Create a new repository at GitHub.com (public or private)
+- Create a README.md file with the repository name
+- Initialize git repository (if needed)
+- Add README.md and commit with a custom message
+- Add the remote and push the files
+- Support for existing directories and projects
 
-The script reads your GitHub username from ~/.config/gh/hosts.yml and uses the directory name as a GitHub repo name.
+The script reads your GitHub username from configuration and uses the directory name as the GitHub repository name.
 
 ## Requirements
 
-- UNIX-lie (Tested on Ubuntu and MacOS.)
-- [GitHub CLI](https://cli.github.com/manual/), >v2.3.0.
-- [jq](https://stedolan.github.io/jq/).
+- UNIX-like system (Tested on Ubuntu and macOS)
+- [GitHub CLI](https://cli.github.com/manual/), >v2.3.0
+- [jq](https://stedolan.github.io/jq/)
 
-Linux users can download gh cli from the [Releases page](https://github.com/cli/cli/releases), then run:
+Linux users can download gh CLI from the [Releases page](https://github.com/cli/cli/releases), then run:
 
 ```sh
 sudo apt install ./gh_x.x.x_xxxxxxx.deb
@@ -49,7 +51,7 @@ awesome install shinokada/gitstart
 
 ### macOS using Homebrew
 
-If you have Homebrew on your macOS, your can run:
+If you have Homebrew on your macOS, you can run:
 
 ```sh
 brew tap shinokada/gitstart && brew install gitstart
@@ -63,12 +65,9 @@ Download the latest version from [releases page](https://github.com/shinokada/gi
 sudo apt install ./gitstart_version_all.deb
 ```
 
-
-
-
 ## Uninstallation
 
-If you install Gitstart either Awesome package manager/Homebrew/Debian package, then the following will uninstall Gistart.
+If you installed Gitstart using Awesome package manager/Homebrew/Debian package, run:
 
 ```sh
 curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh > tmp1 && bash tmp1 && rm tmp1
@@ -76,63 +75,163 @@ curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh >
 
 ## Usage
 
-- Login github using `gh auth login`.
-- Starting gitstart
+### Basic Usage
+
+Login to GitHub and start using gitstart:
 
 ```sh
-# define a dir path
+# Login to GitHub
+gh auth login
+
+# Create a new repository
 gitstart -d repo-name
-# in a current dir
-cd new_repo
-gitstart .
+
+# Create in current directory
+cd existing_project
+gitstart -d .
 ```
 
-- Adding language preference
+### Options
 
-```sh
-gitstart -d repo-name -l python
+```
+-d, --dir DIRECTORY          Directory name or path (use . for current directory)
+-l, --lang LANGUAGE          Programming language for .gitignore
+-p, --private                Create a private repository (default: public)
+-b, --branch BRANCH          Branch name (default: main)
+-m, --message MESSAGE        Initial commit message (default: "Initial commit")
+-desc, --description DESC    Repository description
+--dry-run                    Show what would happen without executing
+-q, --quiet                  Minimal output
+-h, --help                   Show help message
+-v, --version                Show version
 ```
 
-This will add python .gitignore as well.
+### Examples
 
-- The script asks you about your license preference.
-  
+**Create a new repository:**
 ```sh
-Is it correct your GitHub username is shinokada. y/yes/n/no
-y
->>> Your github username is shinokada.
->>> Your new repo name is test1.
+gitstart -d my-project
+```
+
+**Create with specific programming language:**
+```sh
+gitstart -d my-python-app -l python
+```
+
+**Create a private repository:**
+```sh
+gitstart -d secret-project -p
+```
+
+**Use custom commit message and branch:**
+```sh
+gitstart -d my-app -m "First release" -b develop
+```
+
+**Add repository description:**
+```sh
+gitstart -d awesome-tool -desc "An amazing CLI tool for developers"
+```
+
+**Preview changes without executing (dry run):**
+```sh
+gitstart -d test-repo --dry-run
+```
+
+**Quiet mode for scripts:**
+```sh
+gitstart -d automated-repo -q
+```
+
+**Initialize existing project:**
+```sh
+cd my-existing-project
+gitstart -d . -l javascript -desc "My existing JavaScript project"
+```
+
+### Working with Existing Directories
+
+Gitstart now fully supports existing directories with the following behaviors:
+
+**Empty directory:** Creates repository normally
+
+**Directory with files but no git:** 
+- Warns about existing files
+- Asks for confirmation
+- Preserves existing files
+- Adds them to the initial commit
+
+**Directory with existing git repository:**
+- Detects existing `.git` folder
+- Adds remote to existing repository
+- Preserves git history
+
+**Existing LICENSE, README.md, or .gitignore:**
+- Detects existing files
+- Offers to append or skip
+- Prevents accidental overwrites
+
+### Interactive License Selection
+
+When you run gitstart, you'll be prompted to select a license:
+
+```
 Select a license:
 1) MIT: I want it simple and permissive.
 2) Apache License 2.0: I need to work in a community.
 3) GNU GPLv3: I care about sharing improvements.
 4) None
 5) Quit
-Your license: 2
-Apache
-Creating a public remote repo /Users/shinichiokada/Downloads/test1>>> Running git init.
-Initialized empty Git repository in /Users/shinichiokada/Downloads/test1/.git/
-? Repository name test1
-? Repository description test1 repo
-✓ Created repository shinokada/test1 on GitHub
-✓ Added remote git@github.com:shinokada/test1.git
->>> LICENSE is created.
->>> Creating .gitignore for ...
 ```
 
-- Select a visibility.
+## Configuration
 
-```sh
->>> You are logged in. Creating your newtest in remote.
-? Visibility  [Use arrows to move, type to filter]
-> Public
-  Private
-  Internal
-```
+Gitstart stores your GitHub username in `~/.config/gitstart/config` (follows XDG standards). On first run, you'll be prompted to enter your username, which will be saved for future use.
+
+## Error Handling
+
+The script includes comprehensive error handling:
+
+- **Automatic cleanup**: If repository creation fails, the remote repository is automatically deleted
+- **Validation checks**: Ensures all required tools are installed
+- **Auth verification**: Confirms you're logged in to GitHub
+- **File conflict detection**: Warns about existing files before overwriting
+- **Detailed error messages**: Clear information about what went wrong and how to fix it
 
 ## About Licensing
 
 Read more about [Licensing](https://docs.github.com/en/free-pro-team@latest/rest/reference/licenses).
+
+## Changelog
+
+### Version 0.4.0 (2026-01-18)
+
+**New Features:**
+- Private repository support with `-p/--private` flag
+- Custom commit messages with `-m/--message` flag
+- Custom branch names with `-b/--branch` flag
+- Repository description with `-desc/--description` flag
+- Dry run mode with `--dry-run` flag
+- Quiet mode with `-q/--quiet` flag
+- Full support for existing directories and files
+- Automatic rollback on errors
+- Detection and handling of existing git repositories
+
+**Improvements:**
+- Fixed GitHub auth check (now uses proper exit code checking)
+- XDG-compliant config directory (`~/.config/gitstart/config`)
+- Better error messages with context
+- File conflict detection and user prompts
+- Smarter handling of existing LICENSE, README, and .gitignore files
+- Improved overall code quality and error handling
+
+**Bug Fixes:**
+- Fixed issue with `gh repo create --clone` in existing directories
+- Fixed auth status check that was comparing string to integer
+- Proper handling of existing files to prevent data loss
+
+### Version 0.3.0
+- Initial public release
 
 ## Author
 
@@ -143,5 +242,5 @@ Shinichi Okada
 
 ## License
 
-Copyright (c) 2021 Shinichi Okada (@shinokada)
+Copyright (c) 2021-2026 Shinichi Okada (@shinokada)
 This software is released under the MIT License, see LICENSE.

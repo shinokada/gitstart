@@ -27,7 +27,10 @@ setup() {
     fi
     
     echo "$GH_USERNAME" > "$TEST_CONFIG_DIR/config"
-    cd "$TEST_DIR"
+    cd "$TEST_DIR" || {
+        echo "Failed to change to test directory"
+        return 1
+    }
 }
 
 teardown() {

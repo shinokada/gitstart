@@ -1,0 +1,155 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: ShellCheck Static Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: '.'
+          severity: warning
+          format: gcc
+        
+      - name: Run custom shellcheck script
+        run: |
+          chmod +x tests/shellcheck.sh
+          ./tests/shellcheck.sh
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats jq
+      
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install bats-core jq
+      
+      - name: Make scripts executable
+        run: |
+          chmod +x gitstart
+          chmod +x tests/*.sh
+          chmod +x tests/*.bats
+      
+      - name: Run unit tests
+        run: |
+          bats tests/gitstart.bats
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.os }}
+          path: |
+            tests/*.log
+            tests/*.xml
+
+  compatibility:
+    name: Bash Compatibility Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Test with different Bash versions
+        run: |
+          # Test with system bash
+          bash --version
+          bash -n gitstart
+          
+      - name: Check script portability
+        run: |
+          # Check for bashisms
+          if command -v checkbashisms &> /dev/null; then
+            checkbashisms gitstart || true
+          fi
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  lint:
+    name: Additional Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install shfmt
+        run: |
+          GO111MODULE=on go install mvdan.cc/sh/v3/cmd/shfmt@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+      
+      - name: Check shell formatting
+        run: |
+          shfmt -d -i 4 -ci gitstart || true
+      
+      - name: Run markdown linting
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+          config_file: .markdownlint.json
+          ignore_files: node_modules/
+        continue-on-error: true
+
+  test-summary:
+    name: Test Summary
+    needs: [shellcheck, unit-tests, compatibility]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.shellcheck.result }}" != "success" ] || \
+             [ "${{ needs.unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.compatibility.result }}" != "success" ]; then
+            echo "Some tests failed!"
+            exit 1
+          fi
+          echo "All tests passed!"

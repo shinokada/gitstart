@@ -15,7 +15,7 @@ setup() {
     echo "testuser" > "$TEST_CONFIG_DIR/config"
     
     # Change to test directory
-    cd "$TEST_DIR"
+    cd "$TEST_DIR" || return 1
 }
 
 teardown() {

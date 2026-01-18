@@ -31,10 +31,10 @@ run_shellcheck() {
     
     if bash "${SCRIPT_DIR}/shellcheck.sh"; then
         echo -e "${GREEN}✓ ShellCheck passed${NC}"
-        ((total_passed++))
+        ((total_passed++)) || true
     else
         echo -e "${RED}✗ ShellCheck failed${NC}"
-        ((total_failed++))
+        ((total_failed++)) || true
         return 1
     fi
 }
@@ -53,10 +53,10 @@ run_unit_tests() {
     
     if bats "${SCRIPT_DIR}/gitstart.bats"; then
         echo -e "${GREEN}✓ Unit tests passed${NC}"
-        ((total_passed++))
+        ((total_passed++)) || true
     else
         echo -e "${RED}✗ Unit tests failed${NC}"
-        ((total_failed++))
+        ((total_failed++)) || true
         return 1
     fi
 }
