@@ -1,0 +1,86 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck bats jq
+      
+      - name: Verify dependencies
+        run: |
+          echo "Checking installed versions..."
+          shellcheck --version
+          bats --version
+          gh --version || echo "gh CLI not required for unit tests"
+          jq --version
+      
+      - name: Fix script permissions
+        run: |
+          echo "Setting executable permissions..."
+          chmod +x gitstart
+          chmod +x tests/run-tests.sh
+          chmod +x tests/shellcheck.sh
+          [ -f tests/test-dry-run.sh ] && chmod +x tests/test-dry-run.sh || true
+          echo "Permissions set successfully"
+      
+      - name: Run ShellCheck
+        run: ./tests/shellcheck.sh
+      
+      - name: Run unit tests
+        run: |
+          # Run tests with verbose output for CI
+          bats tests/gitstart.bats --formatter tap
+      
+      - name: Test summary
+        if: always()
+        run: |
+          echo "================================"
+          echo "Test run completed"
+          echo "================================"
+          if [[ "${{ job.status }}" == 'success' ]]; then
+            echo "✓ All tests passed!"
+          else
+            echo "✗ Some tests failed"
+          fi
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    # Only run integration tests manually or on main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+      
+      - name: Fix script permissions
+        run: |
+          chmod +x gitstart
+          chmod +x tests/run-tests.sh
+      
+      - name: Run integration tests
+        run: |
+          echo "Integration tests are currently skipped (require GitHub auth)"
+          echo "To run locally: bats tests/integration.bats"
+          # bats tests/integration.bats
+        continue-on-error: true

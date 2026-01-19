@@ -1,0 +1,29 @@
+# Git attributes for gitstart project
+# Ensures proper handling of line endings and permissions
+
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Shell scripts should have LF line endings
+*.sh text eol=lf
+*.bats text eol=lf
+gitstart text eol=lf
+
+# Documentation files
+*.md text eol=lf
+*.txt text eol=lf
+
+# YAML files (GitHub Actions workflows)
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Exclude certain files from release archives
+.gitattributes export-ignore
+.gitignore export-ignore
+.github/ export-ignore
+tests/ export-ignore
+updates/ export-ignore
+fix-permissions.sh export-ignore
