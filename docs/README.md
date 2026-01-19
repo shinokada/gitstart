@@ -8,8 +8,6 @@
 
 <h1  align="center">Gitstart</h1>
 
-[More details about Gitstart.](https://towardsdatascience.com/automate-creating-a-new-github-repository-with-gitstart-1ae961b99866)
-
 ## Overview
 
 > Gitstart creates, adds, and pushes with one line.
@@ -30,6 +28,7 @@ The script reads your GitHub username from configuration and uses the directory 
 ## Requirements
 
 - UNIX-like system (Tested on Ubuntu and macOS)
+- bash (>= 3.2)
 - [GitHub CLI](https://cli.github.com/manual/), >v2.3.0
 - [jq](https://stedolan.github.io/jq/)
 

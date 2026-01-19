@@ -3,7 +3,7 @@
 > Automate GitHub repository creation with one command
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/shinokada/gitstart/releases)
+[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](https://github.com/shinokada/gitstart/releases)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/shinokada/gitstart/actions)
 [![ShellCheck](https://img.shields.io/badge/shellcheck-passing-brightgreen.svg)](https://github.com/koalaman/shellcheck)
 
@@ -99,8 +99,8 @@ awesome install shinokada/gitstart
 ### Debian/Ubuntu
 ```bash
 # Download from releases page
-wget https://github.com/shinokada/gitstart/releases/download/v0.4.0/gitstart_0.4.0_all.deb
-sudo apt install ./gitstart_0.4.0_all.deb
+wget https://github.com/shinokada/gitstart/releases/download/v0.4.1/gitstart_0.4.1_all.deb
+sudo apt install ./gitstart_0.4.1_all.deb
 ```
 
 ### Fedora/RHEL/CentOS
@@ -122,8 +122,8 @@ sudo mv gitstart /usr/local/bin/
 ### WSL2 (Windows)
 ```bash
 # Use Ubuntu/Debian instructions
-wget https://github.com/shinokada/gitstart/releases/download/v0.4.0/gitstart_0.4.0_all.deb
-sudo apt install ./gitstart_0.4.0_all.deb
+wget https://github.com/shinokada/gitstart/releases/download/v0.4.1/gitstart_0.4.1_all.deb
+sudo apt install ./gitstart_0.4.1_all.deb
 ```
 
 ### Manual Installation (All Platforms)

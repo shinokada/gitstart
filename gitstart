@@ -13,10 +13,10 @@ set -euo pipefail
 # Bash version check
 # --------------------
 check_bash_version() {
-    local required_version=4
+    local required_version=3
     local current_version="${BASH_VERSINFO[0]}"
-    
-    if (( current_version < required_version )); then
+
+    if ((current_version < required_version)); then
         cat <<EOF
 ERROR: This script requires Bash ${required_version}.0 or higher.
 Current version: ${BASH_VERSION}
@@ -42,7 +42,7 @@ check_bash_version
 unset github_username dir repo license_url
 script_name="$(basename "${0}")"
 dir=""
-version="0.4.0"
+version="0.4.1"
 
 config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/gitstart"
 gitstart_config="${config_dir}/config"
@@ -331,15 +331,15 @@ else
     # Create new repo and clone into the target directory
     # Create remote repo first (without cloning)
     gh repo create "${gh_args[@]}"
-    
+
     # Clone into parent directory, then move contents
     parent_dir="$(dirname "${dir}")"
     cd "${parent_dir}"
-    
+
     # Clone to a temporary location
     temp_clone="${repo}_temp_$$"
     git clone "https://github.com/${github_username}/${repo}.git" "${temp_clone}"
-    
+
     # Create target directory and move clone contents
     mkdir -p "${dir}"
     if [[ -d "${temp_clone}/.git" ]]; then
@@ -352,7 +352,7 @@ else
         fi
     fi
     rm -rf "${temp_clone}"
-    
+
     # Change to target directory
     cd "${dir}"
 fi
@@ -365,7 +365,7 @@ REPO_CREATED=true
 if [[ "${license_url}" != "none" && ! -f LICENSE ]]; then
     license_body="$(curl -s "https://api.github.com/licenses/${license_url}" | jq -r '.body // empty')"
     if [[ -n "${license_body}" ]]; then
-        echo "${license_body}" > LICENSE
+        echo "${license_body}" >LICENSE
     else
         log "Warning: Could not fetch license text for ${license_url}"
     fi
@@ -386,7 +386,8 @@ EOF
 if [[ ! -f .gitignore ]]; then
     if [[ -n "${prog_lang}" ]]; then
         # Capitalize first letter for GitHub gitignore URL (Bash 4.0+ required)
-        lang_capitalized="${prog_lang^}"
+        first_char="$(printf '%s' "${prog_lang}" | cut -c1 | tr '[:lower:]' '[:upper:]')"
+        lang_capitalized="${first_char}${prog_lang:1}"
         url="https://raw.githubusercontent.com/github/gitignore/master/${lang_capitalized}.gitignore"
         if curl -sf "${url}" -o .gitignore; then
             : # ok

@@ -325,6 +325,6 @@ This project has been transformed from a cluttered repository with multiple bugs
 ---
 
 **Last Updated:** 2026-01-18  
-**Version:** 0.4.0  
+**Version:** 0.4.1  
 **Maintainer:** Shinichi Okada  
 **Status:** ✅ COMPLETE AND PERFECT

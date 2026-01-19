@@ -162,7 +162,7 @@ teardown() {
 }
 
 # Test: Help shows all new options
-@test "help shows all v0.4.0 options" {
+@test "help shows all v0.4.1 options" {
     run "$GITSTART_SCRIPT" -h
     [[ "$output" =~ "--private" ]]
     [[ "$output" =~ "--branch" ]]

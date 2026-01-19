@@ -8,28 +8,28 @@ Gitstart is designed to work on **both macOS and Linux** systems. This document 
 
 ### ✅ Fully Supported Platforms
 
-| Platform | Status | Tested Versions | Notes |
-|----------|--------|----------------|-------|
-| **macOS** | ✅ Full Support | 11.0+, 12.0+, 13.0+ | Primary development platform |
-| **Linux (Ubuntu)** | ✅ Full Support | 20.04, 22.04, 24.04 | Fully tested |
-| **Linux (Debian)** | ✅ Full Support | 11, 12 | Compatible |
-| **Linux (Fedora)** | ✅ Full Support | 38, 39 | Compatible |
-| **Linux (Arch)** | ✅ Full Support | Rolling | Compatible |
+| Platform           | Status         | Tested Versions       | Notes                         |
+| ------------------ | -------------- | --------------------- | ----------------------------- |
+| **macOS**          | ✅ Full Support | 11.0+, 12.0+, 13.0+   | Primary development platform  |
+| **Linux (Ubuntu)** | ✅ Full Support | 20.04, 22.04, 24.04   | Fully tested                  |
+| **Linux (Debian)** | ✅ Full Support | 11, 12                | Compatible                    |
+| **Linux (Fedora)** | ✅ Full Support | 38, 39                | Compatible                    |
+| **Linux (Arch)**   | ✅ Full Support | Rolling               | Compatible                    |
 | **WSL2 (Windows)** | ✅ Full Support | Ubuntu/Debian on WSL2 | Works via Linux compatibility |
 
 ### ⚠️ Limited Support
 
-| Platform | Status | Notes |
-|----------|--------|-------|
+| Platform    | Status     | Notes                           |
+| ----------- | ---------- | ------------------------------- |
 | **FreeBSD** | ⚠️ Untested | Should work with bash installed |
-| **OpenBSD** | ⚠️ Untested | May require bash package |
+| **OpenBSD** | ⚠️ Untested | May require bash package        |
 
 ### ❌ Not Supported
 
-| Platform | Status | Alternative |
-|----------|--------|-------------|
+| Platform             | Status          | Alternative      |
+| -------------------- | --------------- | ---------------- |
 | **Windows (Native)** | ❌ Not Supported | Use WSL2 instead |
-| **MS-DOS** | ❌ Not Supported | N/A |
+| **MS-DOS**           | ❌ Not Supported | N/A              |
 
 ## Compatibility Details
 
@@ -55,13 +55,13 @@ brew install bash
 
 ### Dependencies Cross-Platform Status
 
-| Dependency | macOS | Linux | Installation |
-|------------|-------|-------|--------------|
-| **bash** | ✅ Built-in (3.2) or Homebrew (5.x) | ✅ Built-in (4.x/5.x) | `brew install bash` / `apt install bash` |
-| **git** | ✅ Built-in or Xcode tools | ✅ Usually built-in | `brew install git` / `apt install git` |
-| **gh (GitHub CLI)** | ✅ Via Homebrew | ✅ Via package manager | `brew install gh` / `apt install gh` |
-| **jq** | ✅ Via Homebrew | ✅ Via package manager | `brew install jq` / `apt install jq` |
-| **curl** | ✅ Built-in | ✅ Built-in | Pre-installed |
+| Dependency          | macOS                              | Linux                 | Installation                             |
+| ------------------- | ---------------------------------- | --------------------- | ---------------------------------------- |
+| **bash**            | ✅ Built-in (3.2) or Homebrew (5.x) | ✅ Built-in (4.x/5.x)  | `brew install bash` / `apt install bash` |
+| **git**             | ✅ Built-in or Xcode tools          | ✅ Usually built-in    | `brew install git` / `apt install git`   |
+| **gh (GitHub CLI)** | ✅ Via Homebrew                     | ✅ Via package manager | `brew install gh` / `apt install gh`     |
+| **jq**              | ✅ Via Homebrew                     | ✅ Via package manager | `brew install jq` / `apt install jq`     |
+| **curl**            | ✅ Built-in                         | ✅ Built-in            | Pre-installed                            |
 
 ## Platform-Specific Differences Handled
 
@@ -135,12 +135,12 @@ Thumbs.db
 **Issue:** Some commands have different options
 **Solution:** Uses portable command syntax
 
-| Command | macOS | Linux | Solution |
-|---------|-------|-------|----------|
-| `basename` | ✅ Same | ✅ Same | ✅ Compatible |
-| `dirname` | ✅ Same | ✅ Same | ✅ Compatible |
-| `mktemp` | ✅ Same | ✅ Same | ✅ Compatible |
-| `readlink` | ⚠️ Different | ⚠️ Different | ✅ Not used |
+| Command    | macOS       | Linux       | Solution     |
+| ---------- | ----------- | ----------- | ------------ |
+| `basename` | ✅ Same      | ✅ Same      | ✅ Compatible |
+| `dirname`  | ✅ Same      | ✅ Same      | ✅ Compatible |
+| `mktemp`   | ✅ Same      | ✅ Same      | ✅ Compatible |
+| `readlink` | ⚠️ Different | ⚠️ Different | ✅ Not used   |
 
 ### 6. Bash Features ✅
 
@@ -254,12 +254,12 @@ sudo pacman -S github-cli
 
 ### 2. Default Bash Version
 
-| Platform | Default Bash | Recommended |
-|----------|-------------|-------------|
-| macOS 13+ | 3.2.57 (2007) | 5.2+ via Homebrew |
-| Ubuntu 22.04 | 5.1.16 | Built-in is fine |
-| Ubuntu 24.04 | 5.2.21 | Built-in is fine |
-| Fedora 39 | 5.2.26 | Built-in is fine |
+| Platform     | Default Bash  | Recommended       |
+| ------------ | ------------- | ----------------- |
+| macOS 13+    | 3.2.57 (2007) | 5.2+ via Homebrew |
+| Ubuntu 22.04 | 5.1.16        | Built-in is fine  |
+| Ubuntu 24.04 | 5.2.21        | Built-in is fine  |
+| Fedora 39    | 5.2.26        | Built-in is fine  |
 
 ### 3. File Permissions
 
@@ -287,8 +287,8 @@ sudo mv gitstart /usr/local/bin/
 
 ```bash
 # Option 1: .deb package
-wget https://github.com/shinokada/gitstart/releases/download/v0.4.0/gitstart_0.4.0_all.deb
-sudo apt install ./gitstart_0.4.0_all.deb
+wget https://github.com/shinokada/gitstart/releases/download/v0.4.1/gitstart_0.4.1_all.deb
+sudo apt install ./gitstart_0.4.1_all.deb
 
 # Option 2: Manual
 curl -o gitstart https://raw.githubusercontent.com/shinokada/gitstart/main/gitstart
@@ -430,14 +430,14 @@ make test
 
 ### ✅ Gitstart is Fully Cross-Platform
 
-| Feature | macOS | Linux | Notes |
-|---------|-------|-------|-------|
-| Core functionality | ✅ | ✅ | Identical |
-| Dependencies | ✅ | ✅ | All available |
-| .gitignore generation | ✅ | ✅ | OS-aware |
-| Tests | ✅ | ✅ | CI/CD coverage |
-| Installation | ✅ | ✅ | Multiple methods |
-| Documentation | ✅ | ✅ | Platform-specific guides |
+| Feature               | macOS | Linux | Notes                    |
+| --------------------- | ----- | ----- | ------------------------ |
+| Core functionality    | ✅     | ✅     | Identical                |
+| Dependencies          | ✅     | ✅     | All available            |
+| .gitignore generation | ✅     | ✅     | OS-aware                 |
+| Tests                 | ✅     | ✅     | CI/CD coverage           |
+| Installation          | ✅     | ✅     | Multiple methods         |
+| Documentation         | ✅     | ✅     | Platform-specific guides |
 
 **Recommendation:** The script works identically on both macOS and Linux with no code changes needed!
 

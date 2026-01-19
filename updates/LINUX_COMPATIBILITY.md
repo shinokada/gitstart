@@ -80,10 +80,10 @@ GitHub Actions workflow (`.github/workflows/tests.yml`) runs on:
 ### Test Results
 
 ```
-Platform      | ShellCheck | Unit Tests | Status
---------------|------------|------------|--------
-Ubuntu 22.04  | ✅ Pass    | ✅ Pass    | ✅ Full Support
-macOS 13+     | ✅ Pass    | ✅ Pass    | ✅ Full Support
+| Platform     | ShellCheck | Unit Tests | Status         |
+| ------------ | ---------- | ---------- | -------------- |
+| Ubuntu 22.04 | ✅ Pass     | ✅ Pass     | ✅ Full Support |
+| macOS 13+    | ✅ Pass     | ✅ Pass     | ✅ Full Support |
 ```
 
 ## Installation on Linux
@@ -91,8 +91,8 @@ macOS 13+     | ✅ Pass    | ✅ Pass    | ✅ Full Support
 ### Ubuntu/Debian
 ```bash
 # Option 1: .deb package
-wget https://github.com/shinokada/gitstart/releases/download/v0.4.0/gitstart_0.4.0_all.deb
-sudo apt install ./gitstart_0.4.0_all.deb
+wget https://github.com/shinokada/gitstart/releases/download/v0.4.1/gitstart_0.4.1_all.deb
+sudo apt install ./gitstart_0.4.1_all.deb
 
 # Option 2: Manual
 curl -o gitstart https://raw.githubusercontent.com/shinokada/gitstart/main/gitstart
@@ -131,16 +131,16 @@ source ~/.bashrc
 
 ## Platform Support Matrix
 
-| Platform | Support Level | Tested | Notes |
-|----------|---------------|--------|-------|
-| **macOS 11+** | ✅ Full | Yes | Primary dev platform |
-| **Ubuntu 20.04+** | ✅ Full | Yes | CI/CD tested |
-| **Debian 11+** | ✅ Full | Yes | Compatible |
-| **Fedora 38+** | ✅ Full | Manual | Compatible |
-| **Arch Linux** | ✅ Full | Manual | Compatible |
-| **WSL2** | ✅ Full | Yes | Via Ubuntu/Debian |
-| **FreeBSD** | ⚠️ Should work | No | Untested |
-| **Windows Native** | ❌ No | N/A | Use WSL2 |
+| Platform           | Support Level | Tested | Notes                |
+| ------------------ | ------------- | ------ | -------------------- |
+| **macOS 11+**      | ✅ Full        | Yes    | Primary dev platform |
+| **Ubuntu 20.04+**  | ✅ Full        | Yes    | CI/CD tested         |
+| **Debian 11+**     | ✅ Full        | Yes    | Compatible           |
+| **Fedora 38+**     | ✅ Full        | Manual | Compatible           |
+| **Arch Linux**     | ✅ Full        | Manual | Compatible           |
+| **WSL2**           | ✅ Full        | Yes    | Via Ubuntu/Debian    |
+| **FreeBSD**        | ⚠️ Should work | No     | Untested             |
+| **Windows Native** | ❌ No          | N/A    | Use WSL2             |
 
 ## What Works Exactly the Same
 
@@ -184,7 +184,7 @@ command -v jq && echo "✅ jq"
 
 # Check gitstart
 gitstart -v
-# Output: 0.4.0
+# Output: 0.4.1
 
 # Test with dry-run
 gitstart -d test-project --dry-run
