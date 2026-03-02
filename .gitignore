@@ -1,1 +1,38 @@
+# macOS system files
 .DS_Store
+
+# Windows system files
+Thumbs.db
+
+# Local Netlify folder
+.netlify
+
+# Environment variables (contains secrets)
+.env
+
+# AI development documents
+planning/
+
+# Go build output
+/bin/
+/dist/
+*.exe
+*.out
+*.test
+
+# Go module files
+# (go.sum is usually committed, but ignore if you want to keep workspace clean)
+go.sum
+
+# Editor/IDE folders
+.vscode/
+.idea/
+
+# Test and coverage files
+coverage.out
+
+# Log files
+*.log
+
+# Project binary (if generated)
+gitstart
