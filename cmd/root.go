@@ -63,7 +63,8 @@ More examples:
 			prompts.DryRunPrompt("No actions will be performed in dry-run mode.")
 			return
 		}
-		// ...existing code for actual execution...
+		// TODO: implement full execution path
+		fmt.Fprintln(os.Stderr, "error: full execution not yet implemented; use --dry-run to preview actions")
 	},
 }
 
