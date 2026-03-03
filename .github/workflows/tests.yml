@@ -32,7 +32,6 @@ jobs:
       - name: Fix script permissions
         run: |
           echo "Setting executable permissions..."
-          chmod +x gitstart
           chmod +x tests/run-tests.sh
           chmod +x tests/shellcheck.sh
           [ -f tests/test-dry-run.sh ] && chmod +x tests/test-dry-run.sh || true
@@ -75,7 +74,6 @@ jobs:
       
       - name: Fix script permissions
         run: |
-          chmod +x gitstart
           chmod +x tests/run-tests.sh
       
       - name: Run integration tests

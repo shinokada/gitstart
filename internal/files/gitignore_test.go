@@ -1,6 +1,7 @@
 package files
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,11 +20,15 @@ func TestFetchGitignore(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	info, err := os.Stat(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatalf("expected .gitignore file to exist, got error: %v", err)
 	}
-	if info.Size() == 0 {
+	if len(bytes.TrimSpace(data)) == 0 {
 		t.Fatalf("expected .gitignore file to have content")
+	}
+	fallback := ".DS_Store\n.idea/\n.vscode/\n*.swp\n"
+	if string(data) == fallback {
+		t.Fatalf("expected fetched Go template, got fallback content")
 	}
 }

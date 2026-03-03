@@ -39,7 +39,6 @@ More examples:
 			return
 		}
 		if dryRun {
-			importPrompts()
 			prompts.DryRunPrompt("[OPTIONS]")
 			prompts.DryRunPrompt("  Directory: " + directory)
 			prompts.DryRunPrompt("  Language: " + language)
@@ -65,11 +64,6 @@ More examples:
 		}
 		// ...existing code for actual execution...
 	},
-}
-
-// importPrompts is a hack to ensure prompts is imported for use in Run.
-func importPrompts() {
-	// This function does nothing, but ensures the prompts package is imported.
 }
 
 // boolToString returns "true" or "false" for a bool value.

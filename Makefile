@@ -1,4 +1,7 @@
-.PHONY: build test clean clean-cache clean-all run lint lint-fix coverage install
+.PHONY: all build test clean clean-cache clean-all run lint lint-fix coverage install
+
+# Default target
+all: build
 
 # Build the gitstart binary
 build:
