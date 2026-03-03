@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/shinichiokada/gitstart/internal/prompts"
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ More examples:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if directory == "" {
-			cmd.Help()
+			_ = cmd.Help()
 			return
 		}
 		if dryRun {
@@ -44,10 +45,10 @@ More examples:
 			prompts.DryRunPrompt("  Language: " + language)
 			prompts.DryRunPrompt("  Branch: " + branch)
 			prompts.DryRunPrompt("  Commit message: " + message)
-			prompts.DryRunPrompt("  Private: " + boolToString(private))
-			prompts.DryRunPrompt("  Public: " + boolToString(public))
+			prompts.DryRunPrompt("  Private: " + strconv.FormatBool(private))
+			prompts.DryRunPrompt("  Public: " + strconv.FormatBool(public))
 			prompts.DryRunPrompt("  Description: " + description)
-			prompts.DryRunPrompt("  Quiet: " + boolToString(quiet))
+			prompts.DryRunPrompt("  Quiet: " + strconv.FormatBool(quiet))
 			prompts.DryRunPrompt("  Dry-run: true")
 			prompts.DryRunPrompt("[ACTIONS]")
 			prompts.DryRunPrompt("Would create project directory if needed")
@@ -66,16 +67,8 @@ More examples:
 	},
 }
 
-// boolToString returns "true" or "false" for a bool value.
-func boolToString(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
-}
-
 var dryRun bool
-var version = "v1.0.0" // Update as needed
+var version = "dev" // overridden at build time via -ldflags
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show gitstart version",

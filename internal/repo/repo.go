@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -13,18 +14,24 @@ const (
 	remoteCmdTimeout = 2 * time.Minute
 )
 
-// InitGitRepo initializes a git repository in the given directory.
-func InitGitRepo(dir string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), localCmdTimeout)
+// runCmd executes a command in dir with the given timeout, wrapping any error
+// with the full command string and trimmed stderr for easier diagnosis.
+func runCmd(dir string, timeout time.Duration, args ...string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "git", "init")
+	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
 	cmd.Dir = dir
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("git init: %w: %s", err, stderr.String())
+		return fmt.Errorf("%s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(stderr.String()))
 	}
 	return nil
+}
+
+// InitGitRepo initializes a git repository in the given directory.
+func InitGitRepo(dir string) error {
+	return runCmd(dir, localCmdTimeout, "git", "init")
 }
 
 // CommitAndPush stages all files, commits, and pushes to the remote repository.
@@ -42,15 +49,8 @@ func CommitAndPush(dir, branch, message string) error {
 		{args: []string{"git", "push", "-u", "origin", branch}, timeout: remoteCmdTimeout},
 	}
 	for _, c := range cmds {
-		ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
-		cmd := exec.CommandContext(ctx, c.args[0], c.args[1:]...)
-		cmd.Dir = dir
-		var stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		err := cmd.Run()
-		cancel()
-		if err != nil {
-			return fmt.Errorf("%s: %w: %s", c.args[0], err, stderr.String())
+		if err := runCmd(dir, c.timeout, c.args...); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -69,14 +69,5 @@ func CreateGitHubRepo(dir, repoName, visibility, description string) error {
 	if description != "" {
 		args = append(args, "--description", description)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), remoteCmdTimeout)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, "gh", args...)
-	cmd.Dir = dir
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("gh repo create: %w: %s", err, stderr.String())
-	}
-	return nil
+	return runCmd(dir, remoteCmdTimeout, args...)
 }

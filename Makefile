@@ -1,4 +1,4 @@
-.PHONY: all build test clean clean-cache clean-all run lint lint-fix coverage install
+.PHONY: all build test clean clean-cache clean-all run lint lint-fix coverage coverage-ci install
 
 # Default target
 all: build
@@ -19,10 +19,15 @@ lint:
 lint-fix:
 	golangci-lint run --fix ./...
 
-# Generate and view coverage report
+# Generate and view coverage report (opens browser)
 coverage:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
+
+# Generate coverage report (CI-friendly, text output)
+coverage-ci:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -func=coverage.out
 
 # Run the CLI tool
 run:

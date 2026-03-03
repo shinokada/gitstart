@@ -17,7 +17,9 @@ func TestDryRunPrompt(t *testing.T) {
 
 	DryRunPrompt("Create project directory")
 
-	_ = w.Close()
+	if err := w.Close(); err != nil {
+		t.Fatalf("failed to close pipe writer: %v", err)
+	}
 	out, err := io.ReadAll(r)
 	if err != nil {
 		t.Fatalf("failed to read captured stdout: %v", err)
