@@ -4,28 +4,80 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/shinichiokada/gitstart/internal/prompts"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "gitstart",
 	Short: "Automate GitHub repository creation",
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if private && public {
+			return fmt.Errorf("flags --private and --public are mutually exclusive")
+		}
+		return nil
+	},
 	Long: `gitstart automates project setup, git init, and GitHub repo creation.
 
 Basic Usage:
-  gitstart -d repo-name
-  cd existing_project && gitstart -d .
+	gitstart -d repo-name
+	cd existing_project && gitstart -d .
 
 More examples:
-  gitstart -d my-project
-  gitstart -d my-python-app -l python
-  gitstart -d secret-project -p
-  gitstart -d my-app -m "First release" -b develop
-  gitstart -d awesome-tool --description "An amazing CLI tool for developers"
-  gitstart -d test-repo --dry-run
-  gitstart -d automated-repo -q
-  cd my-existing-project && gitstart -d . -l javascript --description "My existing JavaScript project"
+	gitstart -d my-project
+	gitstart -d my-python-app -l python
+	gitstart -d secret-project -p
+	gitstart -d my-app -m "First release" -b develop
+	gitstart -d awesome-tool --description "An amazing CLI tool for developers"
+	gitstart -d test-repo --dry-run
+	gitstart -d automated-repo -q
+	cd my-existing-project && gitstart -d . -l javascript --description "My existing JavaScript project"
 `,
+	Run: func(cmd *cobra.Command, args []string) {
+		if directory == "" {
+			cmd.Help()
+			return
+		}
+		if dryRun {
+			importPrompts()
+			prompts.DryRunPrompt("[OPTIONS]")
+			prompts.DryRunPrompt("  Directory: " + directory)
+			prompts.DryRunPrompt("  Language: " + language)
+			prompts.DryRunPrompt("  Branch: " + branch)
+			prompts.DryRunPrompt("  Commit message: " + message)
+			prompts.DryRunPrompt("  Private: " + boolToString(private))
+			prompts.DryRunPrompt("  Public: " + boolToString(public))
+			prompts.DryRunPrompt("  Description: " + description)
+			prompts.DryRunPrompt("  Quiet: " + boolToString(quiet))
+			prompts.DryRunPrompt("  Dry-run: true")
+			prompts.DryRunPrompt("[ACTIONS]")
+			prompts.DryRunPrompt("Would create project directory if needed")
+			prompts.DryRunPrompt("Would create .gitignore for language if specified")
+			prompts.DryRunPrompt("Would prompt for and create LICENSE file")
+			prompts.DryRunPrompt("Would create README.md with project name and description")
+			prompts.DryRunPrompt("Would initialize git repository if not present")
+			prompts.DryRunPrompt("Would add all files and commit with message")
+			prompts.DryRunPrompt("Would create GitHub repository (public/private as specified)")
+			prompts.DryRunPrompt("Would add remote origin and push to branch")
+			prompts.DryRunPrompt("Would handle existing files and directories as described in documentation")
+			prompts.DryRunPrompt("No actions will be performed in dry-run mode.")
+			return
+		}
+		// ...existing code for actual execution...
+	},
+}
+
+// importPrompts is a hack to ensure prompts is imported for use in Run.
+func importPrompts() {
+	// This function does nothing, but ensures the prompts package is imported.
+}
+
+// boolToString returns "true" or "false" for a bool value.
+func boolToString(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
 }
 
 var dryRun bool

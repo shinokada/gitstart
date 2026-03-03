@@ -1,11 +1,14 @@
 package config
 
 import (
-	"os"
 	"testing"
 )
 
 func TestSaveAndLoadUsername(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", tmp)
+	t.Setenv("APPDATA", tmp) // Windows fallback
+
 	username := "testuser"
 	if err := SaveUsername(username); err != nil {
 		t.Fatalf("failed to save username: %v", err)
@@ -19,9 +22,4 @@ func TestSaveAndLoadUsername(t *testing.T) {
 		t.Fatalf("expected %s, got %s", username, loaded)
 	}
 
-	// Cleanup
-	path, err := ConfigFilePath()
-	if err == nil {
-		_ = os.Remove(path)
-	}
 }

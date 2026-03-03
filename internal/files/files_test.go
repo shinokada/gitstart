@@ -2,16 +2,13 @@ package files
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestCreateProjectDir(t *testing.T) {
-	tmpDir := "test_tmp_dir"
-	defer func() {
-		if err := os.RemoveAll(tmpDir); err != nil {
-			t.Fatalf("failed to remove temp dir: %v", err)
-		}
-	}()
+	baseDir := t.TempDir()
+	tmpDir := filepath.Join(baseDir, "test_project")
 
 	err := CreateProjectDir(tmpDir)
 	if err != nil {

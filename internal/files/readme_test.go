@@ -2,27 +2,24 @@ package files
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestCreateReadme(t *testing.T) {
-	file := "README_test.md"
-	defer func() {
-		if err := os.Remove(file); err != nil {
-			t.Fatalf("failed to remove test README file: %v", err)
-		}
-	}()
+	file := filepath.Join(t.TempDir(), "README_test.md")
 
 	err := CreateReadme("TestProject", "Test description.", file)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	info, err := os.Stat(file)
+	content, err := os.ReadFile(file)
 	if err != nil {
-		t.Fatalf("expected README file to exist, got error: %v", err)
+		t.Fatalf("expected README file to exist: %v", err)
 	}
-	if info.Size() == 0 {
-		t.Fatalf("expected README file to have content")
+	expected := "# TestProject\n\nTest description.\n"
+	if string(content) != expected {
+		t.Fatalf("unexpected content: got %q, want %q", string(content), expected)
 	}
 }

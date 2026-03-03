@@ -11,9 +11,9 @@ func TestDryRunPrompt(t *testing.T) {
 }
 
 func TestPromptUser(t *testing.T) {
-	// This test is a placeholder; interactive prompts require manual testing or advanced mocking.
+	t.Skip("interactive prompt: requires mocked stdin/stdout to test")
 }
 
 func TestPromptSelect(t *testing.T) {
-	// This test is a placeholder; interactive prompts require manual testing or advanced mocking.
+	t.Skip("interactive prompt: requires mocked stdin/stdout to test")
 }

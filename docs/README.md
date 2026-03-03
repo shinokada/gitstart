@@ -60,7 +60,7 @@ sudo apt install ./gitstart_version_all.deb
 You can install the Go version directly with:
 
 ```sh
-go install github.com/shinokada/gitstart/cmd/gitstart@latest
+go install github.com/shinichiokada/gitstart@latest
 ```
 
 This will place the `gitstart` binary in your `$GOPATH/bin` or `$GOBIN` directory. Make sure this directory is in your `PATH`.
@@ -285,8 +285,8 @@ Gitstart is now fully rewritten in Go for cross-platform support (macOS, Linux, 
 ```
 
 - Interactive prompts will ask for missing info (license, username, etc.)
-- See `planning/implementation_plan.md` for migration details
+- See the Go source code and inline documentation for migration details
 
 ### Migration Notes
 - Bash version is deprecated; Go version is recommended for all platforms
-- For advanced usage, see the [Implementation Plan](../planning/implementation_plan.md)
+- For advanced usage, see the source code and inline documentation

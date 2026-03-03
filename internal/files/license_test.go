@@ -2,16 +2,17 @@ package files
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestFetchLicenseText(t *testing.T) {
-	file := "LICENSE_test"
-	defer func() {
-		if err := os.Remove(file); err != nil {
-			t.Fatalf("failed to remove test license file: %v", err)
-		}
-	}()
+	if os.Getenv("INTEGRATION") == "" {
+		t.Skip("skipping network test; set INTEGRATION=1 to run")
+	}
+
+	dir := t.TempDir()
+	file := filepath.Join(dir, "LICENSE_test")
 
 	err := FetchLicenseText("mit", file)
 	if err != nil {

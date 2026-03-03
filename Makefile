@@ -38,4 +38,4 @@ clean-all: clean clean-cache
 
 # Install the CLI tool
 install:
-	go install main.go
+	go install .

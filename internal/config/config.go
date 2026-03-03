@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // ConfigFilePath returns the path to the config file in the user's config directory.
@@ -16,6 +18,9 @@ func ConfigFilePath() (string, error) {
 
 // SaveUsername stores the GitHub username in the config file.
 func SaveUsername(username string) error {
+	if username == "" {
+		return fmt.Errorf("username cannot be empty")
+	}
 	path, err := ConfigFilePath()
 	if err != nil {
 		return err
@@ -36,5 +41,5 @@ func LoadUsername() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return strings.TrimSpace(string(data)), nil
 }

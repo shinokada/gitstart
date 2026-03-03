@@ -20,10 +20,6 @@ planning/
 *.out
 *.test
 
-# Go module files
-# (go.sum is usually committed, but ignore if you want to keep workspace clean)
-go.sum
-
 # Editor/IDE folders
 .vscode/
 .idea/
