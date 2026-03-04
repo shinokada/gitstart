@@ -40,15 +40,7 @@ sudo apt install ./gh_x.x.x_xxxxxxx.deb
 
 ## Installation
 
-### Linux/macOS using Awesome
-
-After installing [Awesome package manager](https://github.com/shinokada/awesome):
-
-```sh
-awesome install shinokada/gitstart
-```
-
-### macOS using Homebrew
+### macOS/Linux using Homebrew
 
 If you have Homebrew on your macOS, you can run:
 
@@ -64,13 +56,14 @@ Download the latest version from [releases page](https://github.com/shinokada/gi
 sudo apt install ./gitstart_version_all.deb
 ```
 
-## Uninstallation
-
-If you installed Gitstart using Awesome package manager/Homebrew/Debian package, run:
+### Install via Go
+You can install the Go version directly with:
 
 ```sh
-curl -s https://raw.githubusercontent.com/shinokada/gitstart/main/uninstall.sh > tmp1 && bash tmp1 && rm tmp1
+go install github.com/shinichiokada/gitstart@latest
 ```
+
+This will place the `gitstart` binary in your `$GOPATH/bin` or `$GOBIN` directory. Make sure this directory is in your `PATH`.
 
 ## Usage
 
@@ -243,3 +236,57 @@ Shinichi Okada
 
 Copyright (c) 2021-2026 Shinichi Okada (@shinokada)
 This software is released under the MIT License, see LICENSE.
+
+## Go Version Migration (2026)
+
+Gitstart is now fully rewritten in Go for cross-platform support (macOS, Linux, Windows). The new version provides:
+
+- Native Go CLI (no Bash dependency)
+- Same features as before: directory/repo creation, LICENSE/README/.gitignore generation, GitHub integration, dry run, interactive prompts, config management, error handling, and more
+- Improved error handling and code quality
+- Works anywhere Go and the GitHub CLI (`gh`) are available
+
+### Requirements (Go Version)
+- Go 1.21+
+- [GitHub CLI](https://cli.github.com/manual/) (`gh`), authenticated
+- `git` installed
+
+### Installation (Go Version)
+1. Clone the repo:
+   ```sh
+   git clone https://github.com/shinokada/gitstart.git
+   cd gitstart
+   ```
+2. Build:
+   ```sh
+   make build
+   ```
+3. Run:
+   ```sh
+   ./gitstart [options]
+   ```
+
+### Usage (Go Version)
+- All previous CLI options are supported:
+  - `-d, --directory <name>`: Project directory name
+  - `-l, --language <lang>`: Language for .gitignore
+  - `-b, --branch <name>`: Branch name (default: main)
+  - `-m, --message <msg>`: Commit message
+  - `-p, --private`: Create private repo
+  - `-P, --public`: Create public repo
+  - `--description <desc>`: Repo description
+  - `-n, --dry-run`: Preview actions only
+  - `-h, --help`: Show help
+  - `-v, --version`: Show version
+
+#### Example
+```sh
+./gitstart -d my-project -l python -b main -m "Initial commit" --private --description "My new project"
+```
+
+- Interactive prompts will ask for missing info (license, username, etc.)
+- See the Go source code and inline documentation for migration details
+
+### Migration Notes
+- Bash version is deprecated; Go version is recommended for all platforms
+- For advanced usage, see the source code and inline documentation

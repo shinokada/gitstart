@@ -1,0 +1,40 @@
+# GoReleaser config for gitstart
+project_name: gitstart
+release:
+  github:
+    owner: shinokada
+    name: gitstart
+builds:
+  - main: ./main.go
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags: -s -w
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+brews:
+  - name: gitstart
+    tap:
+      owner: shinokada
+      name: homebrew-gitstart
+    commit_author:
+      name: GitHub Actions
+      email: actions@github.com
+    folder: Formula
+    homepage: "https://github.com/shinokada/gitstart"
+    description: "A CLI tool for git project initialization."
+    license: MIT
+    test: |
+      system "#{bin}/gitstart", "--version"
+    install: |
+      bin.install "gitstart"
+    dependencies: []
+    caveats: ""
+    conflicts: []
+    replaces: []
+    skip_upload: false
