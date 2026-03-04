@@ -34,12 +34,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          version: latest
-
       - name: Run GoReleaser
-        run: goreleaser release --clean
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
