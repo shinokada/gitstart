@@ -39,6 +39,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          echo "Integration tests are currently skipped (require GitHub auth)"
+          echo "Integration tests require GitHub auth credentials."
           echo "To run locally: INTEGRATION=1 go test -v ./..."
-        continue-on-error: true
+          echo "Skipping in CI until credentials are configured as secrets."
+          exit 0
