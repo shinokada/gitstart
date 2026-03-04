@@ -1,4 +1,5 @@
 # GoReleaser config for gitstart
+version: 2
 project_name: gitstart
 release:
   github:
@@ -15,11 +16,12 @@ builds:
       - arm64
     ldflags: -s -w
 archives:
-  - format: tar.gz
+  - formats:
+      - tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 brews:
   - name: gitstart
-    tap:
+    repository:
       owner: shinokada
       name: homebrew-gitstart
     commit_author:
