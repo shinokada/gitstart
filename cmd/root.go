@@ -238,11 +238,9 @@ func run() error {
 	}
 
 	// Determine visibility
-	visibility := ""
+	visibility := "public"
 	if private {
 		visibility = "private"
-	} else if public {
-		visibility = "public"
 	}
 
 	// Create GitHub repo (sets remote origin, no push)
