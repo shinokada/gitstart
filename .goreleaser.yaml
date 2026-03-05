@@ -1,12 +1,18 @@
 # GoReleaser config for gitstart
 version: 2
 project_name: gitstart
+
 release:
   github:
     owner: shinokada
     name: gitstart
+
 builds:
-  - main: ./main.go
+  - id: gitstart
+    main: ./main.go
+    binary: gitstart
+    env:
+      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
@@ -14,29 +20,73 @@ builds:
     goarch:
       - amd64
       - arm64
-    ldflags: -s -w
+    ldflags:
+      - -s -w
+      - -X github.com/shinichiokada/gitstart/cmd.version={{.Version}}
+
 archives:
-  - formats:
+  - id: gitstart-archive
+    ids:
+      - gitstart
+    formats:
       - tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - README.md
+      - License
+
+checksum:
+  name_template: "checksums.txt"
+
+nfpms:
+  - id: gitstart-nfpm
+    package_name: gitstart
+    ids:
+      - gitstart
+    vendor: shinokada
+    homepage: https://github.com/shinokada/gitstart
+    maintainer: shinokada <shinokada@users.noreply.github.com>
+    description: A CLI tool for git project initialization.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    contents:
+      - src: ./License
+        dst: /usr/share/doc/gitstart/LICENSE
+      - src: ./README.md
+        dst: /usr/share/doc/gitstart/README.md
+
 brews:
   - name: gitstart
     repository:
       owner: shinokada
       name: homebrew-gitstart
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
       name: GitHub Actions
       email: actions@github.com
-    folder: Formula
-    homepage: "https://github.com/shinokada/gitstart"
-    description: "A CLI tool for git project initialization."
+    directory: Formula
+    homepage: https://github.com/shinokada/gitstart
+    description: A CLI tool for git project initialization.
     license: MIT
-    test: |
-      system "#{bin}/gitstart", "--version"
     install: |
       bin.install "gitstart"
-    dependencies: []
-    caveats: ""
-    conflicts: []
-    replaces: []
-    skip_upload: false
+    test: |
+      system "#{bin}/gitstart", "version"
+
+scoops:
+  - repository:
+      owner: shinokada
+      name: scoop-bucket
+      branch: main
+      token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+    homepage: https://github.com/shinokada/gitstart
+    description: A CLI tool for git project initialization.
+    license: MIT
