@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -50,7 +51,7 @@ func FetchGitignore(language, dest string) error {
 	if normalized == "" {
 		return fmt.Errorf("language cannot be empty")
 	}
-	url := fmt.Sprintf("https://raw.githubusercontent.com/github/gitignore/master/%s.gitignore", normalized)
+	url := fmt.Sprintf("https://raw.githubusercontent.com/github/gitignore/main/%s.gitignore", normalized)
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get(url)
 	if err != nil {
@@ -65,11 +66,19 @@ func FetchGitignore(language, dest string) error {
 		return fmt.Errorf("unexpected status %d fetching .gitignore template for %q", resp.StatusCode, language)
 	}
 
-	f, err := os.Create(dest)
+	tmp, err := os.CreateTemp(filepath.Dir(dest), ".gitignore-*")
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	_, err = io.Copy(f, resp.Body)
-	return err
+	tmpName := tmp.Name()
+	defer func() { _ = os.Remove(tmpName) }()
+
+	if _, err := io.Copy(tmp, resp.Body); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmpName, dest)
 }
