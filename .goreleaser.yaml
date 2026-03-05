@@ -87,6 +87,7 @@ scoops:
       name: scoop-bucket
       branch: main
       token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+    directory: bucket
     homepage: https://github.com/shinokada/gitstart
     description: A CLI tool for git project initialization.
     license: MIT

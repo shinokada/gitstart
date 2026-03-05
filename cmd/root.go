@@ -3,10 +3,14 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 
+	"github.com/shinokada/gitstart/internal/config"
+	"github.com/shinokada/gitstart/internal/files"
 	"github.com/shinokada/gitstart/internal/prompts"
+	"github.com/shinokada/gitstart/internal/repo"
 	"github.com/spf13/cobra"
 )
 
@@ -76,8 +80,10 @@ More examples:
 			prompts.DryRunPrompt("No actions will be performed in dry-run mode.")
 			return
 		}
-		// TODO: implement full execution path
-		fmt.Fprintln(os.Stderr, "error: full execution not yet implemented; use --dry-run to preview actions")
+		if err := run(); err != nil {
+			fmt.Fprintln(os.Stderr, "error:", err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -109,6 +115,132 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&public, "public", "P", false, "Create a public repository")
 	rootCmd.PersistentFlags().StringVar(&description, "description", "", "Repository description")
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Minimal output")
+}
+
+func run() error {
+	// Resolve directory
+	dir := directory
+	if dir == "." {
+		var err error
+		dir, err = os.Getwd()
+		if err != nil {
+			return fmt.Errorf("could not get current directory: %w", err)
+		}
+	}
+	repoName := filepath.Base(dir)
+
+	// Create project directory if needed
+	if err := files.CreateProjectDir(dir); err != nil {
+		return fmt.Errorf("could not create directory %q: %w", dir, err)
+	}
+
+	if !quiet {
+		fmt.Printf("Setting up project %q in %s\n", repoName, dir)
+	}
+
+	// Create .gitignore
+	gitignorePath := filepath.Join(dir, ".gitignore")
+	if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
+		if !quiet {
+			fmt.Println("Creating .gitignore...")
+		}
+		if err := files.FetchGitignore(language, gitignorePath); err != nil {
+			return fmt.Errorf("could not create .gitignore: %w", err)
+		}
+	} else if !quiet {
+		fmt.Println(".gitignore already exists, skipping.")
+	}
+
+	// Select and create LICENSE
+	licensePath := filepath.Join(dir, "LICENSE")
+	if _, err := os.Stat(licensePath); os.IsNotExist(err) {
+		licenseOptions := []string{
+			"mit: Simple and permissive",
+			"apache-2.0: Community-friendly",
+			"gpl-3.0: Share improvements",
+			"None",
+		}
+		choice := prompts.PromptSelect("Select a license:", licenseOptions)
+		switch choice {
+		case licenseOptions[0]:
+			if err := files.FetchLicenseText("mit", licensePath); err != nil {
+				return fmt.Errorf("could not create LICENSE: %w", err)
+			}
+		case licenseOptions[1]:
+			if err := files.FetchLicenseText("apache-2.0", licensePath); err != nil {
+				return fmt.Errorf("could not create LICENSE: %w", err)
+			}
+		case licenseOptions[2]:
+			if err := files.FetchLicenseText("gpl-3.0", licensePath); err != nil {
+				return fmt.Errorf("could not create LICENSE: %w", err)
+			}
+		default:
+			if !quiet {
+				fmt.Println("Skipping LICENSE.")
+			}
+		}
+	} else if !quiet {
+		fmt.Println("LICENSE already exists, skipping.")
+	}
+
+	// Create README.md
+	readmePath := filepath.Join(dir, "README.md")
+	if _, err := os.Stat(readmePath); os.IsNotExist(err) {
+		if !quiet {
+			fmt.Println("Creating README.md...")
+		}
+		if err := files.CreateReadme(repoName, description, readmePath); err != nil {
+			return fmt.Errorf("could not create README.md: %w", err)
+		}
+	} else if !quiet {
+		fmt.Println("README.md already exists, skipping.")
+	}
+
+	// Initialize git repo if needed
+	gitDir := filepath.Join(dir, ".git")
+	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+		if !quiet {
+			fmt.Println("Initializing git repository...")
+		}
+		if err := repo.InitGitRepo(dir); err != nil {
+			return fmt.Errorf("could not initialize git repository: %w", err)
+		}
+	} else if !quiet {
+		fmt.Println("Git repository already exists, skipping init.")
+	}
+
+	// Load or prompt for GitHub username
+	username, err := config.LoadUsername()
+	if err != nil || username == "" {
+		username = prompts.PromptUser("Enter your GitHub username: ")
+		if username == "" {
+			return fmt.Errorf("GitHub username is required")
+		}
+		if err := config.SaveUsername(username); err != nil {
+			return fmt.Errorf("could not save username: %w", err)
+		}
+	}
+
+	// Determine visibility
+	visibility := ""
+	if private {
+		visibility = "private"
+	} else if public {
+		visibility = "public"
+	}
+
+	// Create GitHub repo and push
+	if !quiet {
+		fmt.Printf("Creating GitHub repository %s/%s...\n", username, repoName)
+	}
+	if err := repo.CreateGitHubRepo(dir, repoName, visibility, description); err != nil {
+		return fmt.Errorf("could not create GitHub repository: %w", err)
+	}
+
+	if !quiet {
+		fmt.Printf("✓ Done! Repository available at https://github.com/%s/%s\n", username, repoName)
+	}
+	return nil
 }
 
 func Execute() {
