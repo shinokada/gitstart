@@ -56,9 +56,10 @@ func CommitAndPush(dir, branch, message string) error {
 	return nil
 }
 
-// CreateGitHubRepo creates a GitHub repository using the gh CLI.
+// CreateGitHubRepo creates a GitHub repository using the gh CLI and sets the remote origin,
+// but does not push. Call CommitAndPush afterwards to stage, commit, and push.
 func CreateGitHubRepo(dir, repoName, visibility, description string) error {
-	args := []string{"gh", "repo", "create", repoName, "--source=.", "--remote=origin", "--push"}
+	args := []string{"gh", "repo", "create", repoName, "--source=.", "--remote=origin"}
 	switch visibility {
 	case "":
 	case "public", "private", "internal":

@@ -140,20 +140,28 @@ func run() error {
 
 	// Create .gitignore
 	gitignorePath := filepath.Join(dir, ".gitignore")
-	if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
+	if _, err := os.Stat(gitignorePath); err == nil {
+		if !quiet {
+			fmt.Println(".gitignore already exists, skipping.")
+		}
+	} else if os.IsNotExist(err) {
 		if !quiet {
 			fmt.Println("Creating .gitignore...")
 		}
 		if err := files.FetchGitignore(language, gitignorePath); err != nil {
 			return fmt.Errorf("could not create .gitignore: %w", err)
 		}
-	} else if !quiet {
-		fmt.Println(".gitignore already exists, skipping.")
+	} else {
+		return fmt.Errorf("could not access %s: %w", gitignorePath, err)
 	}
 
 	// Select and create LICENSE
 	licensePath := filepath.Join(dir, "LICENSE")
-	if _, err := os.Stat(licensePath); os.IsNotExist(err) {
+	if _, err := os.Stat(licensePath); err == nil {
+		if !quiet {
+			fmt.Println("LICENSE already exists, skipping.")
+		}
+	} else if os.IsNotExist(err) {
 		licenseOptions := []string{
 			"mit: Simple and permissive",
 			"apache-2.0: Community-friendly",
@@ -179,34 +187,42 @@ func run() error {
 				fmt.Println("Skipping LICENSE.")
 			}
 		}
-	} else if !quiet {
-		fmt.Println("LICENSE already exists, skipping.")
+	} else {
+		return fmt.Errorf("could not access %s: %w", licensePath, err)
 	}
 
 	// Create README.md
 	readmePath := filepath.Join(dir, "README.md")
-	if _, err := os.Stat(readmePath); os.IsNotExist(err) {
+	if _, err := os.Stat(readmePath); err == nil {
+		if !quiet {
+			fmt.Println("README.md already exists, skipping.")
+		}
+	} else if os.IsNotExist(err) {
 		if !quiet {
 			fmt.Println("Creating README.md...")
 		}
 		if err := files.CreateReadme(repoName, description, readmePath); err != nil {
 			return fmt.Errorf("could not create README.md: %w", err)
 		}
-	} else if !quiet {
-		fmt.Println("README.md already exists, skipping.")
+	} else {
+		return fmt.Errorf("could not access %s: %w", readmePath, err)
 	}
 
 	// Initialize git repo if needed
 	gitDir := filepath.Join(dir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+	if _, err := os.Stat(gitDir); err == nil {
+		if !quiet {
+			fmt.Println("Git repository already exists, skipping init.")
+		}
+	} else if os.IsNotExist(err) {
 		if !quiet {
 			fmt.Println("Initializing git repository...")
 		}
 		if err := repo.InitGitRepo(dir); err != nil {
 			return fmt.Errorf("could not initialize git repository: %w", err)
 		}
-	} else if !quiet {
-		fmt.Println("Git repository already exists, skipping init.")
+	} else {
+		return fmt.Errorf("could not access %s: %w", gitDir, err)
 	}
 
 	// Load or prompt for GitHub username
@@ -229,12 +245,20 @@ func run() error {
 		visibility = "public"
 	}
 
-	// Create GitHub repo and push
+	// Create GitHub repo (sets remote origin, no push)
 	if !quiet {
 		fmt.Printf("Creating GitHub repository %s/%s...\n", username, repoName)
 	}
 	if err := repo.CreateGitHubRepo(dir, repoName, visibility, description); err != nil {
 		return fmt.Errorf("could not create GitHub repository: %w", err)
+	}
+
+	// Commit and push with user-supplied branch and message
+	if !quiet {
+		fmt.Printf("Committing and pushing to branch %q...\n", branch)
+	}
+	if err := repo.CommitAndPush(dir, branch, message); err != nil {
+		return fmt.Errorf("could not commit and push: %w", err)
 	}
 
 	if !quiet {
