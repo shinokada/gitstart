@@ -3,11 +3,24 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strconv"
 
 	"github.com/shinokada/gitstart/internal/prompts"
 	"github.com/spf13/cobra"
 )
+
+var version = "dev"
+
+func getVersion() string {
+	if version != "dev" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return version
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "gitstart",
@@ -69,12 +82,11 @@ More examples:
 }
 
 var dryRun bool
-var version = "dev" // overridden at build time via -ldflags
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show gitstart version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gitstart version", version)
+		fmt.Println("gitstart version", getVersion())
 	},
 }
 var directory string
