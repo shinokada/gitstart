@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/shinokada/gitstart/internal/files"
 	"github.com/shinokada/gitstart/internal/prompts"
@@ -256,7 +257,7 @@ func run() error {
 		// Fetch the authenticated gh username for the correct URL
 		ghUser := ghAuthenticatedUser()
 		if ghUser != "" {
-			fmt.Printf("✓ Done! Repository available at https://github.com/%s/%s\n", ghUser, repoName)
+			fmt.Printf("✓ Done! Repository created: %s/%s\n", ghUser, repoName)
 		} else {
 			fmt.Printf("✓ Done! Repository: %s\n", repoName)
 		}
@@ -265,14 +266,16 @@ func run() error {
 }
 
 // ghAuthenticatedUser returns the GitHub username of the currently authenticated gh CLI user.
+// A 5-second timeout guards against the CLI hanging on network or auth issues.
 func ghAuthenticatedUser() string {
-	var out bytes.Buffer
-	cmd := exec.Command("gh", "api", "user", "--jq", ".login")
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "gh", "api", "user", "--jq", ".login")
+	out, err := cmd.Output()
+	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(out.String())
+	return strings.TrimSpace(string(out))
 }
 
 func Execute() {
