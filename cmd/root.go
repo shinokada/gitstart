@@ -36,7 +36,8 @@ var rootCmd = &cobra.Command{
 		if private && public {
 			return fmt.Errorf("flags --private and --public are mutually exclusive")
 		}
-		if strings.TrimSpace(branch) == "" {
+		branch = strings.TrimSpace(branch)
+		if branch == "" {
 			return fmt.Errorf("flag --branch cannot be empty")
 		}
 		return nil
@@ -147,7 +148,8 @@ func run() error {
 
 	// Create .gitignore only when --language is specified
 	gitignorePath := filepath.Join(dir, ".gitignore")
-	if strings.TrimSpace(language) == "" {
+	lang := strings.TrimSpace(language)
+	if lang == "" {
 		if !quiet {
 			fmt.Println("No language specified, skipping .gitignore creation.")
 		}
@@ -159,7 +161,7 @@ func run() error {
 		if !quiet {
 			fmt.Println("Creating .gitignore...")
 		}
-		if err := files.FetchGitignore(language, gitignorePath); err != nil {
+		if err := files.FetchGitignore(lang, gitignorePath); err != nil {
 			return fmt.Errorf("could not create .gitignore: %w", err)
 		}
 	} else {
