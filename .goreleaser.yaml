@@ -26,7 +26,7 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X main.version={{.Version}}
+      - -X github.com/shinichiokada/gitstart/cmd.version={{.Version}}
 
 archives:
   - id: gitstart-archive
@@ -82,7 +82,7 @@ brews:
     install: |
       bin.install "gitstart"
     test: |
-      system "#{bin}/gitstart", "--version"
+      system "#{bin}/gitstart", "version"
 
 scoops:
   - repository:
