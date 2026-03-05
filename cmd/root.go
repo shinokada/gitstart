@@ -36,6 +36,9 @@ var rootCmd = &cobra.Command{
 		if private && public {
 			return fmt.Errorf("flags --private and --public are mutually exclusive")
 		}
+		if strings.TrimSpace(branch) == "" {
+			return fmt.Errorf("flag --branch cannot be empty")
+		}
 		return nil
 	},
 	Long: `gitstart automates project setup, git init, and GitHub repo creation.
@@ -142,9 +145,13 @@ func run() error {
 		fmt.Printf("Setting up project %q in %s\n", repoName, dir)
 	}
 
-	// Create .gitignore
+	// Create .gitignore only when --language is specified
 	gitignorePath := filepath.Join(dir, ".gitignore")
-	if _, err := os.Stat(gitignorePath); err == nil {
+	if strings.TrimSpace(language) == "" {
+		if !quiet {
+			fmt.Println("No language specified, skipping .gitignore creation.")
+		}
+	} else if _, err := os.Stat(gitignorePath); err == nil {
 		if !quiet {
 			fmt.Println(".gitignore already exists, skipping.")
 		}
