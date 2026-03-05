@@ -40,6 +40,10 @@ var rootCmd = &cobra.Command{
 		if branch == "" {
 			return fmt.Errorf("flag --branch cannot be empty")
 		}
+		message = strings.TrimSpace(message)
+		if message == "" {
+			return fmt.Errorf("flag --message cannot be empty")
+		}
 		return nil
 	},
 	Long: `gitstart automates project setup, git init, and GitHub repo creation.
@@ -282,6 +286,12 @@ func createRemoteAndPush(dir, repoName string) error {
 		fmt.Printf("Committing and pushing to branch %q...\n", branch)
 	}
 	if err := repo.CommitAndPush(dir, branch, message); err != nil {
+		// Clean up the orphaned remote repo so the user can retry cleanly
+		if cleanupErr := repo.DeleteGitHubRepo(repoName); cleanupErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not delete orphaned repository %q: %v\n", repoName, cleanupErr)
+		} else if !quiet {
+			fmt.Fprintf(os.Stderr, "note: deleted orphaned repository %q after push failure\n", repoName)
+		}
 		return fmt.Errorf("could not commit and push: %w", err)
 	}
 	if !quiet {

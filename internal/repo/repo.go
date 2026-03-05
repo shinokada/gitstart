@@ -56,6 +56,12 @@ func CommitAndPush(dir, branch, message string) error {
 	return nil
 }
 
+// DeleteGitHubRepo deletes a GitHub repository using the gh CLI.
+// Used for cleanup when a subsequent step fails after repo creation.
+func DeleteGitHubRepo(repoName string) error {
+	return runCmd(".", remoteCmdTimeout, "gh", "repo", "delete", repoName, "--yes")
+}
+
 // CreateGitHubRepo creates a GitHub repository using the gh CLI and sets the remote origin,
 // but does not push. Call CommitAndPush afterwards to stage, commit, and push.
 func CreateGitHubRepo(dir, repoName, visibility, description string) error {

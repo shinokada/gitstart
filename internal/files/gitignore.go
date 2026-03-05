@@ -39,7 +39,7 @@ func NormalizeLanguage(lang string) string {
 	if len(lower) > 0 {
 		return strings.ToUpper(lower[:1]) + lower[1:]
 	}
-	return lang
+	return ""
 }
 
 // FetchGitignore downloads a language-specific .gitignore template from the
@@ -47,6 +47,9 @@ func NormalizeLanguage(lang string) string {
 // rather than silently falling back to a minimal file.
 func FetchGitignore(language, dest string) error {
 	normalized := NormalizeLanguage(language)
+	if normalized == "" {
+		return fmt.Errorf("language cannot be empty")
+	}
 	url := fmt.Sprintf("https://raw.githubusercontent.com/github/gitignore/master/%s.gitignore", normalized)
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get(url)
