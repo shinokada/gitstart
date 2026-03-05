@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/shinichiokada/gitstart/internal/prompts"
+	"github.com/shinokada/gitstart/internal/prompts"
 	"github.com/spf13/cobra"
 )
 

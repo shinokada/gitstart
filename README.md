@@ -63,7 +63,7 @@ sudo rpm -i gitstart_x.x.x_linux_amd64.rpm
 ### Go install
 
 ```sh
-go install github.com/shinichiokada/gitstart@latest
+go install github.com/shinokada/gitstart@latest
 ```
 
 This places the `gitstart` binary in your `$GOPATH/bin` or `$GOBIN` directory. Make sure that directory is in your `PATH`.

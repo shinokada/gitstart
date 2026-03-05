@@ -1,4 +1,4 @@
-module github.com/shinichiokada/gitstart
+module github.com/shinokada/gitstart
 
 go 1.21
 
