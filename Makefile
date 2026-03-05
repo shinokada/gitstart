@@ -1,4 +1,4 @@
-.PHONY: all build test clean clean-cache clean-all run lint lint-fix coverage coverage-ci install
+.PHONY: all build test clean clean-cache clean-all run lint lint-fix coverage coverage-ci install ci
 
 # Default target
 all: build
@@ -43,6 +43,9 @@ clean-cache:
 
 # Clean everything (build artifacts + caches)
 clean-all: clean clean-cache
+
+# Clean, lint, test, and build
+ci: clean-all lint test build
 
 # Install the CLI tool
 install:
