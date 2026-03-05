@@ -76,14 +76,21 @@ More examples:
 			prompts.DryRunPrompt("  Dry-run: true")
 			prompts.DryRunPrompt("[ACTIONS]")
 			prompts.DryRunPrompt("Would create project directory if needed")
-			prompts.DryRunPrompt("Would create .gitignore for language if specified")
-			prompts.DryRunPrompt("Would prompt for and create LICENSE file")
+			if strings.TrimSpace(language) != "" {
+				prompts.DryRunPrompt("Would create .gitignore for language: " + language)
+			} else {
+				prompts.DryRunPrompt("Would skip .gitignore (no language specified)")
+			}
+			if quiet {
+				prompts.DryRunPrompt("Would skip LICENSE creation (quiet mode)")
+			} else {
+				prompts.DryRunPrompt("Would prompt for and create LICENSE file")
+			}
 			prompts.DryRunPrompt("Would create README.md with project name and description")
 			prompts.DryRunPrompt("Would initialize git repository if not present")
 			prompts.DryRunPrompt("Would add all files and commit with message")
 			prompts.DryRunPrompt("Would create GitHub repository (public/private as specified)")
 			prompts.DryRunPrompt("Would add remote origin and push to branch")
-			prompts.DryRunPrompt("Would handle existing files and directories as described in documentation")
 			prompts.DryRunPrompt("No actions will be performed in dry-run mode.")
 			return
 		}
@@ -137,133 +144,147 @@ func run() error {
 	dir = filepath.Clean(dir)
 	repoName := filepath.Base(dir)
 
-	// Create project directory if needed
 	if err := files.CreateProjectDir(dir); err != nil {
 		return fmt.Errorf("could not create directory %q: %w", dir, err)
 	}
-
 	if !quiet {
 		fmt.Printf("Setting up project %q in %s\n", repoName, dir)
 	}
 
-	// Create .gitignore only when --language is specified
-	gitignorePath := filepath.Join(dir, ".gitignore")
+	if err := ensureGitignore(dir); err != nil {
+		return err
+	}
+	if err := ensureLicense(dir); err != nil {
+		return err
+	}
+	if err := ensureReadme(dir, repoName); err != nil {
+		return err
+	}
+	if err := ensureGitRepo(dir); err != nil {
+		return err
+	}
+	if err := createRemoteAndPush(dir, repoName); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ensureGitignore(dir string) error {
 	lang := strings.TrimSpace(language)
 	if lang == "" {
 		if !quiet {
 			fmt.Println("No language specified, skipping .gitignore creation.")
 		}
-	} else if _, err := os.Stat(gitignorePath); err == nil {
+		return nil
+	}
+	p := filepath.Join(dir, ".gitignore")
+	if _, err := os.Stat(p); err == nil {
 		if !quiet {
 			fmt.Println(".gitignore already exists, skipping.")
 		}
-	} else if os.IsNotExist(err) {
-		if !quiet {
-			fmt.Println("Creating .gitignore...")
-		}
-		if err := files.FetchGitignore(lang, gitignorePath); err != nil {
-			return fmt.Errorf("could not create .gitignore: %w", err)
-		}
-	} else {
-		return fmt.Errorf("could not access %s: %w", gitignorePath, err)
+		return nil
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("could not access %s: %w", p, err)
 	}
+	if !quiet {
+		fmt.Println("Creating .gitignore...")
+	}
+	if err := files.FetchGitignore(lang, p); err != nil {
+		return err
+	}
+	return nil
+}
 
-	// Select and create LICENSE
-	licensePath := filepath.Join(dir, "LICENSE")
-	if _, err := os.Stat(licensePath); err == nil {
+func ensureLicense(dir string) error {
+	p := filepath.Join(dir, "LICENSE")
+	if _, err := os.Stat(p); err == nil {
 		if !quiet {
 			fmt.Println("LICENSE already exists, skipping.")
 		}
-	} else if os.IsNotExist(err) {
-		if quiet {
-			// Skip interactive prompt in quiet/non-interactive mode
-		} else {
-			licenseOptions := []string{
-				"mit: Simple and permissive",
-				"apache-2.0: Community-friendly",
-				"gpl-3.0: Share improvements",
-				"None",
-			}
-			choice := prompts.PromptSelect("Select a license:", licenseOptions)
-			switch choice {
-			case licenseOptions[0]:
-				if err := files.FetchLicenseText("mit", licensePath); err != nil {
-					return fmt.Errorf("could not create LICENSE: %w", err)
-				}
-			case licenseOptions[1]:
-				if err := files.FetchLicenseText("apache-2.0", licensePath); err != nil {
-					return fmt.Errorf("could not create LICENSE: %w", err)
-				}
-			case licenseOptions[2]:
-				if err := files.FetchLicenseText("gpl-3.0", licensePath); err != nil {
-					return fmt.Errorf("could not create LICENSE: %w", err)
-				}
-			default:
-				fmt.Println("Skipping LICENSE.")
-			}
-		}
-	} else {
-		return fmt.Errorf("could not access %s: %w", licensePath, err)
+		return nil
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("could not access %s: %w", p, err)
 	}
+	if quiet {
+		// Skip interactive prompt in quiet/non-interactive mode
+		return nil
+	}
+	licenseOptions := []string{
+		"mit: Simple and permissive",
+		"apache-2.0: Community-friendly",
+		"gpl-3.0: Share improvements",
+		"None",
+	}
+	choice := prompts.PromptSelect("Select a license:", licenseOptions)
+	switch choice {
+	case licenseOptions[0]:
+		return files.FetchLicenseText("mit", p)
+	case licenseOptions[1]:
+		return files.FetchLicenseText("apache-2.0", p)
+	case licenseOptions[2]:
+		return files.FetchLicenseText("gpl-3.0", p)
+	default:
+		fmt.Println("Skipping LICENSE.")
+	}
+	return nil
+}
 
-	// Create README.md
-	readmePath := filepath.Join(dir, "README.md")
-	if _, err := os.Stat(readmePath); err == nil {
+func ensureReadme(dir, repoName string) error {
+	p := filepath.Join(dir, "README.md")
+	if _, err := os.Stat(p); err == nil {
 		if !quiet {
 			fmt.Println("README.md already exists, skipping.")
 		}
-	} else if os.IsNotExist(err) {
-		if !quiet {
-			fmt.Println("Creating README.md...")
-		}
-		if err := files.CreateReadme(repoName, description, readmePath); err != nil {
-			return fmt.Errorf("could not create README.md: %w", err)
-		}
-	} else {
-		return fmt.Errorf("could not access %s: %w", readmePath, err)
+		return nil
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("could not access %s: %w", p, err)
 	}
+	if !quiet {
+		fmt.Println("Creating README.md...")
+	}
+	if err := files.CreateReadme(repoName, description, p); err != nil {
+		return fmt.Errorf("could not create README.md: %w", err)
+	}
+	return nil
+}
 
-	// Initialize git repo if needed
+func ensureGitRepo(dir string) error {
 	gitDir := filepath.Join(dir, ".git")
 	if _, err := os.Stat(gitDir); err == nil {
 		if !quiet {
 			fmt.Println("Git repository already exists, skipping init.")
 		}
-	} else if os.IsNotExist(err) {
-		if !quiet {
-			fmt.Println("Initializing git repository...")
-		}
-		if err := repo.InitGitRepo(dir); err != nil {
-			return fmt.Errorf("could not initialize git repository: %w", err)
-		}
-	} else {
+		return nil
+	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("could not access %s: %w", gitDir, err)
 	}
+	if !quiet {
+		fmt.Println("Initializing git repository...")
+	}
+	if err := repo.InitGitRepo(dir); err != nil {
+		return fmt.Errorf("could not initialize git repository: %w", err)
+	}
+	return nil
+}
 
-	// Determine visibility
+func createRemoteAndPush(dir, repoName string) error {
 	visibility := "public"
 	if private {
 		visibility = "private"
 	}
-
-	// Create GitHub repo (sets remote origin, no push)
 	if !quiet {
 		fmt.Printf("Creating GitHub repository %s...\n", repoName)
 	}
 	if err := repo.CreateGitHubRepo(dir, repoName, visibility, description); err != nil {
 		return fmt.Errorf("could not create GitHub repository: %w", err)
 	}
-
-	// Commit and push with user-supplied branch and message
 	if !quiet {
 		fmt.Printf("Committing and pushing to branch %q...\n", branch)
 	}
 	if err := repo.CommitAndPush(dir, branch, message); err != nil {
 		return fmt.Errorf("could not commit and push: %w", err)
 	}
-
 	if !quiet {
-		// Fetch the authenticated gh username for the correct URL
 		ghUser := ghAuthenticatedUser()
 		if ghUser != "" {
 			fmt.Printf("✓ Done! Repository created: %s/%s\n", ghUser, repoName)
