@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
+	"strings"
 
-	"github.com/shinokada/gitstart/internal/config"
 	"github.com/shinokada/gitstart/internal/files"
 	"github.com/shinokada/gitstart/internal/prompts"
 	"github.com/shinokada/gitstart/internal/repo"
@@ -118,15 +120,16 @@ func init() {
 }
 
 func run() error {
-	// Resolve directory
+	// Resolve directory to an absolute, clean path
 	dir := directory
-	if dir == "." {
-		var err error
-		dir, err = os.Getwd()
+	if !filepath.IsAbs(dir) {
+		wd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("could not get current directory: %w", err)
 		}
+		dir = filepath.Join(wd, dir)
 	}
+	dir = filepath.Clean(dir)
 	repoName := filepath.Base(dir)
 
 	// Create project directory if needed
@@ -162,28 +165,30 @@ func run() error {
 			fmt.Println("LICENSE already exists, skipping.")
 		}
 	} else if os.IsNotExist(err) {
-		licenseOptions := []string{
-			"mit: Simple and permissive",
-			"apache-2.0: Community-friendly",
-			"gpl-3.0: Share improvements",
-			"None",
-		}
-		choice := prompts.PromptSelect("Select a license:", licenseOptions)
-		switch choice {
-		case licenseOptions[0]:
-			if err := files.FetchLicenseText("mit", licensePath); err != nil {
-				return fmt.Errorf("could not create LICENSE: %w", err)
+		if quiet {
+			// Skip interactive prompt in quiet/non-interactive mode
+		} else {
+			licenseOptions := []string{
+				"mit: Simple and permissive",
+				"apache-2.0: Community-friendly",
+				"gpl-3.0: Share improvements",
+				"None",
 			}
-		case licenseOptions[1]:
-			if err := files.FetchLicenseText("apache-2.0", licensePath); err != nil {
-				return fmt.Errorf("could not create LICENSE: %w", err)
-			}
-		case licenseOptions[2]:
-			if err := files.FetchLicenseText("gpl-3.0", licensePath); err != nil {
-				return fmt.Errorf("could not create LICENSE: %w", err)
-			}
-		default:
-			if !quiet {
+			choice := prompts.PromptSelect("Select a license:", licenseOptions)
+			switch choice {
+			case licenseOptions[0]:
+				if err := files.FetchLicenseText("mit", licensePath); err != nil {
+					return fmt.Errorf("could not create LICENSE: %w", err)
+				}
+			case licenseOptions[1]:
+				if err := files.FetchLicenseText("apache-2.0", licensePath); err != nil {
+					return fmt.Errorf("could not create LICENSE: %w", err)
+				}
+			case licenseOptions[2]:
+				if err := files.FetchLicenseText("gpl-3.0", licensePath); err != nil {
+					return fmt.Errorf("could not create LICENSE: %w", err)
+				}
+			default:
 				fmt.Println("Skipping LICENSE.")
 			}
 		}
@@ -225,18 +230,6 @@ func run() error {
 		return fmt.Errorf("could not access %s: %w", gitDir, err)
 	}
 
-	// Load or prompt for GitHub username
-	username, err := config.LoadUsername()
-	if err != nil || username == "" {
-		username = prompts.PromptUser("Enter your GitHub username: ")
-		if username == "" {
-			return fmt.Errorf("GitHub username is required")
-		}
-		if err := config.SaveUsername(username); err != nil {
-			return fmt.Errorf("could not save username: %w", err)
-		}
-	}
-
 	// Determine visibility
 	visibility := "public"
 	if private {
@@ -245,7 +238,7 @@ func run() error {
 
 	// Create GitHub repo (sets remote origin, no push)
 	if !quiet {
-		fmt.Printf("Creating GitHub repository %s/%s...\n", username, repoName)
+		fmt.Printf("Creating GitHub repository %s...\n", repoName)
 	}
 	if err := repo.CreateGitHubRepo(dir, repoName, visibility, description); err != nil {
 		return fmt.Errorf("could not create GitHub repository: %w", err)
@@ -260,9 +253,26 @@ func run() error {
 	}
 
 	if !quiet {
-		fmt.Printf("✓ Done! Repository available at https://github.com/%s/%s\n", username, repoName)
+		// Fetch the authenticated gh username for the correct URL
+		ghUser := ghAuthenticatedUser()
+		if ghUser != "" {
+			fmt.Printf("✓ Done! Repository available at https://github.com/%s/%s\n", ghUser, repoName)
+		} else {
+			fmt.Printf("✓ Done! Repository: %s\n", repoName)
+		}
 	}
 	return nil
+}
+
+// ghAuthenticatedUser returns the GitHub username of the currently authenticated gh CLI user.
+func ghAuthenticatedUser() string {
+	var out bytes.Buffer
+	cmd := exec.Command("gh", "api", "user", "--jq", ".login")
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		return ""
+	}
+	return strings.TrimSpace(out.String())
 }
 
 func Execute() {
