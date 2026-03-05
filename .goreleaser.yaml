@@ -2,10 +2,6 @@
 version: 2
 project_name: gitstart
 
-before:
-  hooks:
-    - go mod tidy
-
 release:
   github:
     owner: shinokada
@@ -71,6 +67,7 @@ brews:
     repository:
       owner: shinokada
       name: homebrew-gitstart
+      branch: main
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
       name: GitHub Actions
@@ -88,6 +85,7 @@ scoops:
   - repository:
       owner: shinokada
       name: scoop-bucket
+      branch: main
       token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
     homepage: https://github.com/shinokada/gitstart
     description: A CLI tool for git project initialization.
