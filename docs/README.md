@@ -148,6 +148,40 @@ gitstart -d . -l javascript --description "My existing JavaScript project"
 gitstart version
 ```
 
+### Shell Completion
+
+Gitstart supports Tab completion in your shell. Once set up, pressing Tab after typing part of a flag or subcommand will either complete it automatically or show you the available options. For example:
+
+```sh
+gitstart --di[TAB]        # completes to --directory
+gitstart --[TAB]          # lists all flags
+gitstart [TAB]            # lists all subcommands: completion, help, version
+```
+
+Run the setup command for your shell once, then open a new terminal (or source your config file):
+
+**Bash**
+```sh
+gitstart completion bash >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Zsh**
+```sh
+gitstart completion zsh > "${fpath[1]}/_gitstart"
+source ~/.zshrc
+```
+
+**Fish**
+```sh
+gitstart completion fish > ~/.config/fish/completions/gitstart.fish
+```
+
+**PowerShell**
+```sh
+gitstart completion powershell >> $PROFILE
+```
+
 ### Working with Existing Directories
 
 **Empty directory:** Creates repository normally
