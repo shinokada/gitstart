@@ -37,7 +37,7 @@ archives:
           - zip
     files:
       - README.md
-      - License
+      - LICENSE
 
 checksum:
   name_template: "checksums.txt"
@@ -57,7 +57,7 @@ nfpms:
       - rpm
     bindir: /usr/bin
     contents:
-      - src: ./License
+      - src: ./LICENSE
         dst: /usr/share/doc/gitstart/LICENSE
       - src: ./README.md
         dst: /usr/share/doc/gitstart/README.md
