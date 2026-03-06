@@ -14,11 +14,12 @@
 
 Gitstart automates creating a GitHub repository. It will:
 
-- Create `.gitignore` if you provide a language
+- Auto-detect project language and create `.gitignore` (or use `-l` to specify)
 - Create a license file based on your choice
 - Create a new repository at GitHub.com (public or private)
 - Create a `README.md` file with the repository name
 - Initialize a git repository (if needed)
+- Auto-detect the active branch from an existing repo
 - Add files and commit with a custom message
 - Add the remote and push
 - Support existing directories and projects
@@ -84,21 +85,63 @@ cd existing_project
 gitstart -d .
 ```
 
+### After a Framework Starter
+
+gitstart works seamlessly after scaffolding tools like `npx sv create`, `npm create vite@latest`, or `composer create-project`. Use `--post-framework` to skip prompts for files the framework already created, while still auto-detecting the language and branch:
+
+```sh
+npx sv create my-app && cd my-app && gitstart -d . --post-framework
+npm create vite@latest my-app && cd my-app && gitstart -d . --post-framework
+composer create-project laravel/laravel my-app && cd my-app && gitstart -d . --post-framework
+npx nuxi@latest init my-app && cd my-app && gitstart -d . --post-framework
+```
+
+Or use quiet mode for a minimal one-liner:
+
+```sh
+npx sv create my-app && cd my-app && gitstart -d . -q
+```
+
 ### Options
 
-```
+```text
 -d, --directory DIRECTORY    Directory name or path (use . for current directory)
--l, --language LANGUAGE      Programming language for .gitignore
+-l, --language LANGUAGE      Programming language for .gitignore (auto-detected if omitted)
 -p, --private                Create a private repository (default: public)
 -P, --public                 Create a public repository
--b, --branch BRANCH          Branch name (default: main)
+-b, --branch BRANCH          Branch name (auto-detected from existing repo; default: main)
 -m, --message MESSAGE        Initial commit message (default: "Initial commit")
     --description DESC       Repository description
+    --no-license             Skip LICENSE file creation
+    --no-readme              Skip README.md creation
+    --post-framework         Optimised for use after a framework starter
+                             (implies --no-license --no-readme)
 -n, --dry-run                Show what would happen without executing
 -q, --quiet                  Minimal output
 -h, --help                   Show help message
     version                  Show version
 ```
+
+### Language Auto-detection
+
+When `-l` is not provided and no `.gitignore` exists, gitstart inspects the project directory for well-known marker files and infers the language automatically:
+
+| Marker file(s) | Detected language |
+|---|---|
+| `go.mod` | Go |
+| `Cargo.toml` | Rust |
+| `pubspec.yaml` | Dart |
+| `composer.json` | Composer (PHP) |
+| `Gemfile` | Ruby |
+| `pom.xml`, `build.gradle`, `build.gradle.kts` | Java |
+| `requirements.txt`, `pyproject.toml`, `setup.py`, `setup.cfg` | Python |
+| `package.json` | Node |
+
+If multiple markers are present the first match in the table above wins. You can always override auto-detection with `-l`.
+
+### Branch Auto-detection
+
+When `--branch` is not explicitly set and a `.git` directory already exists (e.g. created by a framework starter), gitstart reads the active branch from `.git/HEAD` and pushes to that branch instead of defaulting to `main`. Passing `--branch` explicitly always takes precedence.
 
 ### Examples
 
@@ -125,6 +168,19 @@ gitstart -d my-app -m "First release" -b develop
 **Add repository description:**
 ```sh
 gitstart -d awesome-tool --description "An amazing CLI tool for developers"
+```
+
+**Skip LICENSE and README (e.g. framework already created them):**
+```sh
+cd my-existing-project
+gitstart -d . --no-license --no-readme
+```
+
+**Use --post-framework after a Svelte scaffold:**
+```sh
+npx sv create my-app
+cd my-app
+gitstart -d . --post-framework
 ```
 
 **Preview changes without executing (dry run):**
@@ -184,7 +240,7 @@ gitstart completion powershell >> $PROFILE
 
 ### Working with Existing Directories
 
-**Empty directory:** Creates repository normally
+**Empty directory:** Creates repository normally.
 
 **Directory with files but no git:**
 - Warns about existing files
@@ -194,25 +250,25 @@ gitstart completion powershell >> $PROFILE
 
 **Directory with existing git repository:**
 - Detects existing `.git` folder
+- Auto-detects the active branch from `.git/HEAD`
 - Adds remote to existing repository
 - Preserves git history
 
 **Existing LICENSE, README.md, or .gitignore:**
-- Detects existing files
-- Offers to append or skip
-- Prevents accidental overwrites
+- Detects existing files and skips them
+- Use `--no-license` or `--no-readme` to explicitly suppress creation
+- Use `--post-framework` to suppress both at once
 
 ### Interactive License Selection
 
-When you run gitstart, you'll be prompted to select a license:
+When you run gitstart without `--no-license`, `--post-framework`, or `-q`, you'll be prompted to select a license:
 
-```
+```text
 Select a license:
-1) MIT: I want it simple and permissive.
-2) Apache License 2.0: I need to work in a community.
-3) GNU GPLv3: I care about sharing improvements.
+1) mit: Simple and permissive
+2) apache-2.0: Community-friendly
+3) gpl-3.0: Share improvements
 4) None
-5) Quit
 ```
 
 ## Error Handling
@@ -220,7 +276,7 @@ Select a license:
 - **Automatic cleanup**: If repository creation fails, the remote repository is automatically deleted
 - **Validation checks**: Ensures all required tools are installed
 - **Auth verification**: Confirms you're logged in to GitHub
-- **File conflict detection**: Warns about existing files before overwriting
+- **File conflict detection**: Detects existing files and skips safely
 - **Detailed error messages**: Clear information about what went wrong and how to fix it
 
 ## About Licensing
@@ -228,6 +284,24 @@ Select a license:
 Read more about [Licensing](https://docs.github.com/en/free-pro-team@latest/rest/reference/licenses).
 
 ## Changelog
+
+### Version 1.2.0
+
+**New Features:**
+- Auto-detect project language from marker files (`go.mod`, `package.json`, `Cargo.toml`, etc.) when `-l` is not provided
+- `--no-license` flag to skip LICENSE creation without suppressing all output
+- `--no-readme` flag to skip README.md creation without suppressing all output
+- `--post-framework` flag: optimised mode for use after framework starters — implies `--no-license --no-readme`
+- Auto-detect active branch from `.git/HEAD` when `--branch` is not explicitly set
+
+**Bug Fixes:**
+- Fixed dry-run language detection to always auto-detect (not only when `--post-framework` is set)
+- Fixed `composer.json` marker mapping from `PHP` to `Composer` (PHP.gitignore does not exist in GitHub/gitignore)
+- Renamed internal `resolvDir` to `resolveDir` (typo fix)
+
+### Version 1.1.0
+
+- Added shell completion support (bash, zsh, fish, PowerShell)
 
 ### Version 1.0.0 (2026)
 
