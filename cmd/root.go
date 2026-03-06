@@ -73,12 +73,11 @@ After a framework starter:
 			return
 		}
 
-		// --post-framework implies --no-license and --no-readme; it also
-		// enables language auto-detection and existing-branch detection.
-		if postFramework {
-			noLicense = true
-			noReadme = true
-		}
+		// Derive effective skip flags without mutating the Cobra-bound vars.
+		// Mutating noLicense/noReadme directly would corrupt state across
+		// multiple in-process Execute() calls (e.g. in tests).
+		effNoLicense := noLicense || postFramework
+		effNoReadme := noReadme || postFramework
 
 		if dryRun {
 			// Resolve directory for dry-run display.
@@ -119,8 +118,8 @@ After a framework starter:
 			prompts.DryRunPrompt("  Public: " + strconv.FormatBool(public))
 			prompts.DryRunPrompt("  Description: " + description)
 			prompts.DryRunPrompt("  Quiet: " + strconv.FormatBool(quiet))
-			prompts.DryRunPrompt("  No-license: " + strconv.FormatBool(noLicense))
-			prompts.DryRunPrompt("  No-readme: " + strconv.FormatBool(noReadme))
+			prompts.DryRunPrompt("  No-license: " + strconv.FormatBool(effNoLicense))
+			prompts.DryRunPrompt("  No-readme: " + strconv.FormatBool(effNoReadme))
 			prompts.DryRunPrompt("  Post-framework: " + strconv.FormatBool(postFramework))
 			prompts.DryRunPrompt("  Dry-run: true")
 			prompts.DryRunPrompt("[ACTIONS]")
@@ -130,14 +129,14 @@ After a framework starter:
 			} else {
 				prompts.DryRunPrompt("Would skip .gitignore (no language specified or detected)")
 			}
-			if noLicense {
+			if effNoLicense {
 				prompts.DryRunPrompt("Would skip LICENSE creation (--no-license / --post-framework)")
 			} else if quiet {
 				prompts.DryRunPrompt("Would skip LICENSE creation (quiet mode)")
 			} else {
 				prompts.DryRunPrompt("Would prompt for and create LICENSE file")
 			}
-			if noReadme {
+			if effNoReadme {
 				prompts.DryRunPrompt("Would skip README.md creation (--no-readme / --post-framework)")
 			} else {
 				prompts.DryRunPrompt("Would create README.md with project name and description")
@@ -154,7 +153,7 @@ After a framework starter:
 		// whether to honour an existing repo's branch instead.
 		branchExplicit = cmd.Flags().Changed("branch")
 
-		if err := run(); err != nil {
+		if err := run(effNoLicense, effNoReadme); err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			os.Exit(1)
 		}
@@ -201,7 +200,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Minimal output")
 	rootCmd.PersistentFlags().BoolVar(&noLicense, "no-license", false, "Skip LICENSE file creation")
 	rootCmd.PersistentFlags().BoolVar(&noReadme, "no-readme", false, "Skip README.md creation")
-	rootCmd.PersistentFlags().BoolVar(&postFramework, "post-framework", false, "Optimised for use after a framework starter (implies --no-license --no-readme, enables auto-detection)")
+	rootCmd.PersistentFlags().BoolVar(&postFramework, "post-framework", false, "Optimised for use after a framework starter (implies --no-license --no-readme)")
 }
 
 // resolveDir converts the directory flag value to an absolute, clean path.
@@ -216,7 +215,7 @@ func resolveDir(dir string) string {
 	return filepath.Clean(filepath.Join(wd, dir))
 }
 
-func run() error {
+func run(effNoLicense, effNoReadme bool) error {
 	dir := resolveDir(directory)
 	repoName := filepath.Base(dir)
 
@@ -230,16 +229,20 @@ func run() error {
 	if err := ensureGitignore(dir); err != nil {
 		return err
 	}
-	if err := ensureLicense(dir); err != nil {
+	if err := ensureLicense(dir, effNoLicense); err != nil {
 		return err
 	}
-	if err := ensureReadme(dir, repoName); err != nil {
+	if err := ensureReadme(dir, repoName, effNoReadme); err != nil {
 		return err
 	}
-	if err := ensureGitRepo(dir); err != nil {
+	// resolvedBranch is determined before git init so that a newly-created
+	// repo always gets the exact branch the user expects (or the default).
+	// This keeps dry-run output consistent with the actual run.
+	resolvedBranch := effectiveBranch(dir)
+	if err := ensureGitRepo(dir, resolvedBranch); err != nil {
 		return err
 	}
-	if err := createRemoteAndPush(dir, repoName); err != nil {
+	if err := createRemoteAndPush(dir, repoName, resolvedBranch); err != nil {
 		return err
 	}
 	return nil
@@ -285,9 +288,9 @@ func ensureGitignore(dir string) error {
 	return files.FetchGitignore(lang, p)
 }
 
-func ensureLicense(dir string) error {
+func ensureLicense(dir string, effNoLicense bool) error {
 	// Respect --no-license (also set by --post-framework).
-	if noLicense {
+	if effNoLicense {
 		if !quiet {
 			fmt.Println("Skipping LICENSE creation (--no-license).")
 		}
@@ -329,9 +332,9 @@ func ensureLicense(dir string) error {
 	return nil
 }
 
-func ensureReadme(dir, repoName string) error {
+func ensureReadme(dir, repoName string, effNoReadme bool) error {
 	// Respect --no-readme (also set by --post-framework).
-	if noReadme {
+	if effNoReadme {
 		if !quiet {
 			fmt.Println("Skipping README.md creation (--no-readme).")
 		}
@@ -357,7 +360,7 @@ func ensureReadme(dir, repoName string) error {
 	return nil
 }
 
-func ensureGitRepo(dir string) error {
+func ensureGitRepo(dir, branch string) error {
 	gitDir := filepath.Join(dir, ".git")
 	if _, err := os.Stat(gitDir); err == nil {
 		if !quiet {
@@ -370,15 +373,17 @@ func ensureGitRepo(dir string) error {
 	if !quiet {
 		fmt.Println("Initializing git repository...")
 	}
-	if err := repo.InitGitRepo(dir); err != nil {
+	if err := repo.InitGitRepo(dir, branch); err != nil {
 		return fmt.Errorf("could not initialize git repository: %w", err)
 	}
 	return nil
 }
 
 // effectiveBranch returns the branch to push to. If the user did not explicitly
-// pass --branch and an existing git repo is detected, we read the active branch
-// from .git/HEAD so we honour whatever the framework starter (or the user) set.
+// pass --branch and a pre-existing git repo is detected, we read the active
+// branch from .git/HEAD so we honour whatever the framework starter set.
+// For newly-created repos there is no .git/HEAD yet, so this falls back to
+// the branch flag default, which is then passed explicitly to git init.
 func effectiveBranch(dir string) string {
 	if !branchExplicit {
 		if detected := repo.DetectCurrentBranch(dir); detected != "" {
@@ -388,7 +393,7 @@ func effectiveBranch(dir string) string {
 	return branch
 }
 
-func createRemoteAndPush(dir, repoName string) error {
+func createRemoteAndPush(dir, repoName, pushBranch string) error {
 	visibility := "public"
 	if private {
 		visibility = "private"
@@ -400,7 +405,6 @@ func createRemoteAndPush(dir, repoName string) error {
 		return fmt.Errorf("could not create GitHub repository: %w", err)
 	}
 
-	pushBranch := effectiveBranch(dir)
 	if !quiet {
 		fmt.Printf("Committing and pushing to branch %q...\n", pushBranch)
 	}

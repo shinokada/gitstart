@@ -31,9 +31,11 @@ func runCmd(dir string, timeout time.Duration, args ...string) error {
 	return nil
 }
 
-// InitGitRepo initializes a git repository in the given directory.
-func InitGitRepo(dir string) error {
-	return runCmd(dir, localCmdTimeout, "git", "init")
+// InitGitRepo initializes a git repository in the given directory with the
+// given initial branch name. Passing an explicit branch makes the result
+// deterministic regardless of the system-level init.defaultBranch setting.
+func InitGitRepo(dir, branch string) error {
+	return runCmd(dir, localCmdTimeout, "git", "init", "-b", branch)
 }
 
 // DetectCurrentBranch reads the active branch from an existing .git/HEAD file.

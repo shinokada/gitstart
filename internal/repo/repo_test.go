@@ -9,7 +9,7 @@ import (
 func TestInitGitRepo(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	err := InitGitRepo(tmpDir)
+	err := InitGitRepo(tmpDir, "main")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
