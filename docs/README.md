@@ -92,6 +92,7 @@ gitstart works seamlessly after scaffolding tools like `npx sv create`, `npm cre
 ```sh
 npx sv create my-app && cd my-app && gitstart -d . --post-framework
 npm create vite@latest my-app && cd my-app && gitstart -d . --post-framework
+npm create vite@latest my-app -- --template react && cd my-app && gitstart -d . --post-framework
 composer create-project laravel/laravel my-app && cd my-app && gitstart -d . --post-framework
 npx nuxi@latest init my-app && cd my-app && gitstart -d . --post-framework
 ```
@@ -179,6 +180,13 @@ gitstart -d . --no-license --no-readme
 **Use --post-framework after a Svelte scaffold:**
 ```sh
 npx sv create my-app
+cd my-app
+gitstart -d . --post-framework
+```
+
+**Use --post-framework after a React scaffold:**
+```sh
+npm create vite@latest my-app -- --template react
 cd my-app
 gitstart -d . --post-framework
 ```
