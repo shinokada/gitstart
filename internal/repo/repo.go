@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -32,6 +34,23 @@ func runCmd(dir string, timeout time.Duration, args ...string) error {
 // InitGitRepo initializes a git repository in the given directory.
 func InitGitRepo(dir string) error {
 	return runCmd(dir, localCmdTimeout, "git", "init")
+}
+
+// DetectCurrentBranch reads the active branch from an existing .git/HEAD file.
+// Returns "" if .git/HEAD is absent, unreadable, or in a detached-HEAD state.
+func DetectCurrentBranch(dir string) string {
+	headPath := filepath.Join(dir, ".git", "HEAD")
+	data, err := os.ReadFile(headPath)
+	if err != nil {
+		return ""
+	}
+	// .git/HEAD contains "ref: refs/heads/<branch>\n" when on a branch.
+	line := strings.TrimSpace(string(data))
+	const prefix = "ref: refs/heads/"
+	if !strings.HasPrefix(line, prefix) {
+		return ""
+	}
+	return strings.TrimPrefix(line, prefix)
 }
 
 // CommitAndPush stages all files, commits, and pushes to the remote repository.

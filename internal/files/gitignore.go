@@ -10,6 +10,36 @@ import (
 	"time"
 )
 
+// languageMarkers maps known project marker filenames to a gitignore language.
+// The first matching marker wins, so order within each entry does not matter
+// but entries higher in the slice take priority if multiple languages match.
+var languageMarkers = []struct {
+	files    []string
+	language string
+}{
+	{files: []string{"go.mod"}, language: "Go"},
+	{files: []string{"Cargo.toml"}, language: "Rust"},
+	{files: []string{"pubspec.yaml"}, language: "Dart"},
+	{files: []string{"composer.json"}, language: "PHP"},
+	{files: []string{"Gemfile"}, language: "Ruby"},
+	{files: []string{"pom.xml", "build.gradle", "build.gradle.kts"}, language: "Java"},
+	{files: []string{"requirements.txt", "pyproject.toml", "setup.py", "setup.cfg"}, language: "Python"},
+	{files: []string{"package.json"}, language: "Node"},
+}
+
+// DetectLanguage inspects dir for well-known project marker files and returns
+// the inferred gitignore language name, or "" if nothing is recognised.
+func DetectLanguage(dir string) string {
+	for _, entry := range languageMarkers {
+		for _, marker := range entry.files {
+			if _, err := os.Stat(filepath.Join(dir, marker)); err == nil {
+				return entry.language
+			}
+		}
+	}
+	return ""
+}
+
 // languageAliases maps common lowercase inputs to the exact filename used in
 // github.com/github/gitignore (without the .gitignore extension).
 var languageAliases = map[string]string{
