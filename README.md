@@ -285,6 +285,17 @@ Read more about [Licensing](https://docs.github.com/en/free-pro-team@latest/rest
 
 ## Changelog
 
+### Version 1.2.2
+
+**Bug Fixes:**
+- Add v1.2.1 changelog and README entries (missed before tagging)
+
+### Version 1.2.1
+
+**Bug Fixes:**
+- Fixed goreleaser CI failure: corrected `License` to `LICENSE` in
+  `.goreleaser.yaml` (archives files list and nfpms contents)
+
 ### Version 1.2.0
 
 **New Features:**
