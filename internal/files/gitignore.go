@@ -20,7 +20,7 @@ var languageMarkers = []struct {
 	{files: []string{"go.mod"}, language: "Go"},
 	{files: []string{"Cargo.toml"}, language: "Rust"},
 	{files: []string{"pubspec.yaml"}, language: "Dart"},
-	{files: []string{"composer.json"}, language: "PHP"},
+	{files: []string{"composer.json"}, language: "Composer"},
 	{files: []string{"Gemfile"}, language: "Ruby"},
 	{files: []string{"pom.xml", "build.gradle", "build.gradle.kts"}, language: "Java"},
 	{files: []string{"requirements.txt", "pyproject.toml", "setup.py", "setup.cfg"}, language: "Python"},

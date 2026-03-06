@@ -38,9 +38,9 @@ func TestDetectLanguage(t *testing.T) {
 			expected: "Rust",
 		},
 		{
-			name:     "PHP project",
+			name:     "Composer (PHP) project",
 			markers:  []string{"composer.json"},
-			expected: "PHP",
+			expected: "Composer",
 		},
 		{
 			name:     "Ruby project",

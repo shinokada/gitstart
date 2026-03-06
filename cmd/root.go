@@ -82,11 +82,11 @@ After a framework starter:
 
 		if dryRun {
 			// Resolve directory for dry-run display.
-			dir := resolvDir(directory)
+			dir := resolveDir(directory)
 			repoName := filepath.Base(dir)
 
 			detectedLang := ""
-			if language == "" && postFramework {
+			if language == "" {
 				detectedLang = files.DetectLanguage(dir)
 			}
 			effectiveLang := language
@@ -204,8 +204,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&postFramework, "post-framework", false, "Optimised for use after a framework starter (implies --no-license --no-readme, enables auto-detection)")
 }
 
-// resolvDir converts the directory flag value to an absolute, clean path.
-func resolvDir(dir string) string {
+// resolveDir converts the directory flag value to an absolute, clean path.
+func resolveDir(dir string) string {
 	if filepath.IsAbs(dir) {
 		return filepath.Clean(dir)
 	}
@@ -217,7 +217,7 @@ func resolvDir(dir string) string {
 }
 
 func run() error {
-	dir := resolvDir(directory)
+	dir := resolveDir(directory)
 	repoName := filepath.Base(dir)
 
 	if err := files.CreateProjectDir(dir); err != nil {
