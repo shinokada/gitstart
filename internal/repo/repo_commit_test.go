@@ -10,7 +10,7 @@ func TestCommitAndPush(t *testing.T) {
 	dir := t.TempDir()
 
 	// Initialize git repo
-	if err := InitGitRepo(dir); err != nil {
+	if err := InitGitRepo(dir, "main"); err != nil {
 		t.Fatalf("failed to init git repo: %v", err)
 	}
 

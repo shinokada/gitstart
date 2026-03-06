@@ -17,4 +17,7 @@ func TestInitGitRepo(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(tmpDir, ".git")); err != nil {
 		t.Fatalf("expected .git directory to exist, got error: %v", err)
 	}
+	if got := DetectCurrentBranch(tmpDir); got != "main" {
+		t.Fatalf("expected branch %q after init, got %q", "main", got)
+	}
 }

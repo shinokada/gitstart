@@ -104,7 +104,7 @@ npx sv create my-app && cd my-app && gitstart -d . -q
 
 ### Options
 
-```
+```text
 -d, --directory DIRECTORY    Directory name or path (use . for current directory)
 -l, --language LANGUAGE      Programming language for .gitignore (auto-detected if omitted)
 -p, --private                Create a private repository (default: public)
@@ -115,7 +115,7 @@ npx sv create my-app && cd my-app && gitstart -d . -q
     --no-license             Skip LICENSE file creation
     --no-readme              Skip README.md creation
     --post-framework         Optimised for use after a framework starter
-                             (implies --no-license --no-readme, enables auto-detection)
+                             (implies --no-license --no-readme)
 -n, --dry-run                Show what would happen without executing
 -q, --quiet                  Minimal output
 -h, --help                   Show help message
@@ -263,7 +263,7 @@ gitstart completion powershell >> $PROFILE
 
 When you run gitstart without `--no-license`, `--post-framework`, or `-q`, you'll be prompted to select a license:
 
-```
+```text
 Select a license:
 1) mit: Simple and permissive
 2) apache-2.0: Community-friendly
@@ -291,12 +291,12 @@ Read more about [Licensing](https://docs.github.com/en/free-pro-team@latest/rest
 - Auto-detect project language from marker files (`go.mod`, `package.json`, `Cargo.toml`, etc.) when `-l` is not provided
 - `--no-license` flag to skip LICENSE creation without suppressing all output
 - `--no-readme` flag to skip README.md creation without suppressing all output
-- `--post-framework` flag: optimised mode for use after framework starters — implies `--no-license --no-readme` and enables language and branch auto-detection
+- `--post-framework` flag: optimised mode for use after framework starters — implies `--no-license --no-readme`
 - Auto-detect active branch from `.git/HEAD` when `--branch` is not explicitly set
 
 **Bug Fixes:**
 - Fixed dry-run language detection to always auto-detect (not only when `--post-framework` is set)
-- Fixed `composer.json` marker mapping from `PHP` to `Composer` (PHP.gitignore does not exist in github/gitignore)
+- Fixed `composer.json` marker mapping from `PHP` to `Composer` (PHP.gitignore does not exist in GitHub/gitignore)
 - Renamed internal `resolvDir` to `resolveDir` (typo fix)
 
 ### Version 1.1.0

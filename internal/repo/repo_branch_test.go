@@ -60,3 +60,25 @@ func TestDetectCurrentBranch(t *testing.T) {
 		})
 	}
 }
+
+func TestDetectCurrentBranch_WorktreeFile(t *testing.T) {
+	// Simulate a worktree/submodule where .git is a file containing a
+	// "gitdir: <path>" pointer rather than being a directory.
+	worktreeDir := t.TempDir()
+	realGitDir := t.TempDir()
+
+	// Write the real HEAD into the separate git directory.
+	if err := os.WriteFile(filepath.Join(realGitDir, "HEAD"), []byte("ref: refs/heads/feature\n"), 0644); err != nil {
+		t.Fatalf("could not write HEAD: %v", err)
+	}
+
+	// Write the .git file pointer in the worktree directory (absolute path).
+	gitFile := filepath.Join(worktreeDir, ".git")
+	if err := os.WriteFile(gitFile, []byte("gitdir: "+realGitDir+"\n"), 0644); err != nil {
+		t.Fatalf("could not write .git file: %v", err)
+	}
+
+	if got := DetectCurrentBranch(worktreeDir); got != "feature" {
+		t.Errorf("DetectCurrentBranch() = %q, want %q", "feature", got)
+	}
+}

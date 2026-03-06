@@ -93,8 +93,9 @@ After a framework starter:
 				effectiveLang = detectedLang
 			}
 
+			branchWasSetDry := cmd.Flags().Changed("branch")
 			detectedBranch := ""
-			if !cmd.Flags().Changed("branch") {
+			if !branchWasSetDry {
 				detectedBranch = repo.DetectCurrentBranch(dir)
 			}
 			effectiveBranch := branch
@@ -149,11 +150,11 @@ After a framework starter:
 			return
 		}
 
-		// Capture whether --branch was explicitly set so run() can decide
-		// whether to honour an existing repo's branch instead.
-		branchExplicit = cmd.Flags().Changed("branch")
+		// Derive whether --branch was explicitly set locally so the value
+		// is never stale across repeated in-process Execute() calls.
+		branchWasSet := cmd.Flags().Changed("branch")
 
-		if err := run(effNoLicense, effNoReadme); err != nil {
+		if err := run(effNoLicense, effNoReadme, branchWasSet); err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			os.Exit(1)
 		}
@@ -173,10 +174,6 @@ var (
 	noLicense     bool
 	noReadme      bool
 	postFramework bool
-
-	// branchExplicit records whether --branch was explicitly provided by the
-	// user. Set in the Run closure so it is available inside run().
-	branchExplicit bool
 )
 
 var versionCmd = &cobra.Command{
@@ -215,7 +212,7 @@ func resolveDir(dir string) string {
 	return filepath.Clean(filepath.Join(wd, dir))
 }
 
-func run(effNoLicense, effNoReadme bool) error {
+func run(effNoLicense, effNoReadme, branchWasSet bool) error {
 	dir := resolveDir(directory)
 	repoName := filepath.Base(dir)
 
@@ -238,7 +235,7 @@ func run(effNoLicense, effNoReadme bool) error {
 	// resolvedBranch is determined before git init so that a newly-created
 	// repo always gets the exact branch the user expects (or the default).
 	// This keeps dry-run output consistent with the actual run.
-	resolvedBranch := effectiveBranch(dir)
+	resolvedBranch := effectiveBranch(dir, branchWasSet)
 	if err := ensureGitRepo(dir, resolvedBranch); err != nil {
 		return err
 	}
@@ -379,13 +376,13 @@ func ensureGitRepo(dir, branch string) error {
 	return nil
 }
 
-// effectiveBranch returns the branch to push to. If the user did not explicitly
-// pass --branch and a pre-existing git repo is detected, we read the active
-// branch from .git/HEAD so we honour whatever the framework starter set.
-// For newly-created repos there is no .git/HEAD yet, so this falls back to
-// the branch flag default, which is then passed explicitly to git init.
-func effectiveBranch(dir string) string {
-	if !branchExplicit {
+// effectiveBranch returns the branch to push to. branchWasSet reports whether
+// the user explicitly passed --branch on this invocation. If not, and a
+// pre-existing repo is found, we read the active branch from git so we honour
+// whatever the framework starter set. For newly-created repos there is no HEAD
+// yet, so we fall back to the branch flag default and pass it to git init.
+func effectiveBranch(dir string, branchWasSet bool) string {
+	if !branchWasSet {
 		if detected := repo.DetectCurrentBranch(dir); detected != "" {
 			return detected
 		}
