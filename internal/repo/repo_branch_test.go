@@ -79,6 +79,6 @@ func TestDetectCurrentBranch_WorktreeFile(t *testing.T) {
 	}
 
 	if got := DetectCurrentBranch(worktreeDir); got != "feature" {
-		t.Errorf("DetectCurrentBranch() = %q, want %q", "feature", got)
+		t.Errorf("DetectCurrentBranch() = %q, want %q", got, "feature")
 	}
 }
